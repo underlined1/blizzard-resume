@@ -82,11 +82,10 @@
           <div class="music-copy"><p class="section-kicker">MY SOUND CORNER</p><h2 id="music-title">让喜欢的歌，<br /><em>陪着这个角落。</em></h2><p>选择一首本地音频，即可直接在这里播放。每次访问都可以换成当下最想听的那一首。</p></div>
           <div class="music-player-card">
             <div class="music-disc" aria-hidden="true"><span>❄</span></div>
-            <p class="music-label">NOW PLAYING / YOUR CHOICE</p>
-            <audio class="music-player" controls data-music-player aria-label="音乐播放器"></audio>
-            <label class="music-upload"><input type="file" accept="audio/*" data-music-upload /><span>上传我的音乐</span><b aria-hidden="true">＋</b></label>
-            <p class="music-status" data-music-status>尚未选择音乐。</p>
-            <p class="music-note">音频只会在当前浏览器会话中播放，不会上传到网站。</p>
+            <p class="music-label" data-public-music-title>NOW PLAYING / 暂未设置</p>
+            <audio class="music-player" controls preload="none" data-public-music-player aria-label="公开音乐播放器"></audio>
+            <p class="music-status" data-public-music-status>正在加载公开音乐…</p>
+            <p class="music-note">音乐由站长在管理后台上传；浏览器需要你点击播放，才会发出声音。</p>
           </div>
         </section>
 
@@ -95,6 +94,9 @@
 
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>KEEP GOING, GENTLY.</span><a href="records.html">OPEN RECORDS →</a></footer>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script src="public-music.js"></script>
   </body>
 </html>

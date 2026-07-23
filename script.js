@@ -56,39 +56,6 @@ document.querySelectorAll("[data-copy-email]").forEach((button) => {
   });
 });
 
-const musicInput = document.querySelector("[data-music-upload]");
-const musicPlayer = document.querySelector("[data-music-player]");
-const musicStatus = document.querySelector("[data-music-status]");
-let musicUrl = null;
-
-if (musicInput && musicPlayer && musicStatus) {
-  musicInput.addEventListener("change", () => {
-    const [file] = musicInput.files;
-    if (!file) return;
-
-    if (musicUrl) URL.revokeObjectURL(musicUrl);
-    musicUrl = URL.createObjectURL(file);
-    musicPlayer.src = musicUrl;
-    musicPlayer.load();
-    musicStatus.textContent = `正在播放准备：${file.name}`;
-    musicPlayer.play().catch(() => {
-      musicStatus.textContent = `已载入：${file.name}，点击播放键开始欣赏。`;
-    });
-  });
-
-  musicPlayer.addEventListener("play", () => {
-    musicStatus.textContent = "音乐正在播放。";
-  });
-
-  musicPlayer.addEventListener("ended", () => {
-    musicStatus.textContent = "这一首播放完了。";
-  });
-
-  window.addEventListener("beforeunload", () => {
-    if (musicUrl) URL.revokeObjectURL(musicUrl);
-  });
-}
-
 const calendarGrid = document.querySelector("[data-calendar-grid]");
 const calendarMonth = document.querySelector("[data-calendar-month]");
 const calendarPrevious = document.querySelector("[data-calendar-prev]");

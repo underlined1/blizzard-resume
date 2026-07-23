@@ -24,6 +24,12 @@
   const newEntry = document.querySelector("[data-admin-new-entry]");
   const entryList = document.querySelector("[data-admin-entry-list]");
   const recordCount = document.querySelector("[data-admin-record-count]");
+  const musicForm = document.querySelector("[data-admin-music-form]");
+  const musicTitle = document.querySelector("[data-admin-music-title]");
+  const musicFile = document.querySelector("[data-admin-music-file]");
+  const saveMusic = document.querySelector("[data-admin-save-music]");
+  const musicStatus = document.querySelector("[data-admin-music-status]");
+  const musicPreview = document.querySelector("[data-admin-music-preview]");
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -38,6 +44,7 @@
   let records = [];
   let selectedDate = null;
   let selectedRecordId = null;
+  let currentMusic = null;
 
   const isoToday = () => {
     const now = new Date();
@@ -262,6 +269,71 @@
   newEntry.addEventListener("click", resetEditor);
   deleteEntry.addEventListener("click", () => void deleteRecord(selectedDate || entryDate.value));
 
+  const applyMusic = (music) => {
+    currentMusic = music || null;
+    if (!music?.audio_path) {
+      musicStatus.textContent = "还没有发布公开音乐。";
+      musicPreview.removeAttribute("src");
+      return;
+    }
+    const { data } = client.storage.from("site-audio").getPublicUrl(music.audio_path);
+    musicPreview.src = data.publicUrl;
+    musicTitle.value = music.title || "";
+    musicStatus.textContent = `当前公开音乐：${music.title || "未命名"}`;
+  };
+
+  const fetchMusic = async () => {
+    const { data, error } = await client.from("site_music").select("id, owner_id, title, audio_path").eq("id", 1).maybeSingle();
+    if (error) {
+      musicStatus.textContent = "音乐存储尚未配置，请先执行 site-music.sql。";
+      return;
+    }
+    applyMusic(data);
+  };
+
+  musicForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!activeUser) return;
+    const file = musicFile.files?.[0];
+    if (!file && !currentMusic) {
+      musicStatus.textContent = "请先选择一首音频文件。";
+      return;
+    }
+    if (file && (!file.type.startsWith("audio/") || file.size > 20 * 1024 * 1024)) {
+      musicStatus.textContent = "请上传小于 20MB 的音频文件。";
+      return;
+    }
+    saveMusic.disabled = true;
+    musicStatus.textContent = "正在上传并发布音乐…";
+    let audioPath = currentMusic?.audio_path;
+    if (file) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      audioPath = `${activeUser.id}/${Date.now()}-${safeName}`;
+      const { error: uploadError } = await client.storage.from("site-audio").upload(audioPath, file, { cacheControl: "3600", contentType: file.type });
+      if (uploadError) {
+        saveMusic.disabled = false;
+        musicStatus.textContent = `上传失败：${uploadError.message}`;
+        return;
+      }
+    }
+    const title = musicTitle.value.trim() || file?.name || currentMusic?.title || "暴风雪的歌单";
+    const { error } = await client.from("site_music").upsert([{
+      id: 1, owner_id: activeUser.id, title, audio_path: audioPath
+    }], { onConflict: "id" });
+    saveMusic.disabled = false;
+    if (error) {
+      if (file && audioPath) await client.storage.from("site-audio").remove([audioPath]);
+      musicStatus.textContent = `发布失败：${error.message}`;
+      return;
+    }
+    if (file && currentMusic?.audio_path && currentMusic.audio_path !== audioPath) {
+      await client.storage.from("site-audio").remove([currentMusic.audio_path]);
+    }
+    musicFile.value = "";
+    await fetchMusic();
+    musicStatus.textContent = "音乐已发布，首页访客刷新后即可播放。";
+  });
+
   signOutButton.addEventListener("click", async () => {
     signOutButton.disabled = true;
     const { error } = await client.auth.signOut();
@@ -274,6 +346,7 @@
     if (session?.user) {
       resetEditor();
       void fetchRecords();
+      void fetchMusic();
     }
   });
 
@@ -282,6 +355,7 @@
     if (data.session?.user) {
       resetEditor();
       void fetchRecords();
+      void fetchMusic();
     }
   });
 })();

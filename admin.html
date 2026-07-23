@@ -53,12 +53,22 @@
             <button class="utility-button" type="button" data-admin-cancel-password>取消</button>
           </form>
 
+          <section class="admin-music-card" aria-labelledby="admin-music-title">
+            <div><p class="section-kicker">PUBLIC SOUNDTRACK</p><h3 id="admin-music-title">上传全站音乐</h3><p>保存后，首页访客都能播放这首歌。</p></div>
+            <form class="admin-music-form" data-admin-music-form>
+              <input data-admin-music-title type="text" maxlength="80" placeholder="歌曲名称（可选）" />
+              <input data-admin-music-file type="file" accept="audio/*" />
+              <button class="button button-primary" type="submit" data-admin-save-music>发布音乐</button>
+            </form>
+            <p class="admin-music-status" data-admin-music-status>尚未读取公开音乐。</p>
+            <audio class="admin-music-preview" controls preload="metadata" data-admin-music-preview></audio>
+          </section>
+
           <div class="admin-workspace">
             <section class="admin-editor-card" aria-labelledby="admin-editor-title">
               <div class="admin-card-heading"><div><p class="section-kicker">WRITE A CHECK-IN</p><h3 id="admin-editor-title">写下今天</h3></div><button class="utility-button" type="button" data-admin-new-entry>新建一条</button></div>
               <form data-admin-entry-form>
-                <label class="admin-field-label" for="admin-entry-date">日期</label>
-                <input id="admin-entry-date" data-admin-entry-date type="date" required />
+                <details class="admin-makeup"><summary>补写任意日期</summary><label class="admin-field-label" for="admin-entry-date">补写日期</label><input id="admin-entry-date" data-admin-entry-date type="date" required /></details>
                 <label class="admin-field-label" for="admin-entry-note">学习 / 工作内容</label>
                 <textarea id="admin-entry-note" data-admin-entry-note rows="9" maxlength="1000" placeholder="例如：完成 Python 数据分析练习；健身训练 40 分钟；整理本周笔记…"></textarea>
                 <label class="admin-check-toggle"><input type="checkbox" data-admin-entry-checked checked /><span>这一天已完成打卡</span></label>

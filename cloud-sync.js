@@ -5,6 +5,11 @@
   const loginButton = document.querySelector("[data-cloud-login-button]");
   const account = document.querySelector("[data-cloud-account]");
   const cloudUser = document.querySelector("[data-cloud-user]");
+  const changeEmailButton = document.querySelector("[data-cloud-change-email]");
+  const changeEmailForm = document.querySelector("[data-cloud-email-change-form]");
+  const newEmail = document.querySelector("[data-cloud-new-email]");
+  const changeEmailSubmit = document.querySelector("[data-cloud-change-email-submit]");
+  const cancelEmailChange = document.querySelector("[data-cloud-cancel-email-change]");
   const signOutButton = document.querySelector("[data-cloud-sign-out]");
   const storageKey = "blizzard-calendar-checkins-v1";
   const config = window.SUPABASE_CONFIG || {};
@@ -22,11 +27,17 @@
     if (user) {
       loginForm.hidden = true;
       account.hidden = false;
+      changeEmailForm.hidden = true;
+      changeEmailForm.reset();
+      changeEmailButton?.setAttribute("aria-expanded", "false");
       cloudUser.textContent = `已登录：${user.email || "云端账户"}`;
       return;
     }
     loginForm.hidden = false;
     account.hidden = true;
+    changeEmailForm.hidden = true;
+    changeEmailForm.reset();
+    changeEmailButton?.setAttribute("aria-expanded", "false");
   };
 
   if (!isConfigured) {
@@ -177,6 +188,52 @@
     status.textContent = error
       ? `登录链接发送失败：${error.message}`
       : "登录链接已发送到邮箱，请打开邮件完成登录。";
+  });
+
+  changeEmailButton?.addEventListener("click", () => {
+    if (!activeUser) return;
+    const willShow = changeEmailForm.hidden;
+    changeEmailForm.hidden = !willShow;
+    changeEmailButton.setAttribute("aria-expanded", String(willShow));
+    status.textContent = willShow
+      ? "输入新邮箱后，会向新旧邮箱发送确认邮件。"
+      : "云端同步已开启，打卡会自动保存。";
+    if (willShow) newEmail?.focus();
+  });
+
+  cancelEmailChange?.addEventListener("click", () => {
+    changeEmailForm.hidden = true;
+    changeEmailForm.reset();
+    changeEmailButton?.setAttribute("aria-expanded", "false");
+    status.textContent = "已取消更换邮箱。";
+  });
+
+  changeEmailForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = newEmail.value.trim();
+    if (!activeUser || !email) return;
+    if (email.toLowerCase() === (activeUser.email || "").toLowerCase()) {
+      status.textContent = "新邮箱与当前登录邮箱相同。";
+      return;
+    }
+
+    changeEmailSubmit.disabled = true;
+    status.textContent = "正在发送邮箱更换确认邮件…";
+    const { error } = await client.auth.updateUser(
+      { email },
+      { emailRedirectTo: window.location.href }
+    );
+    changeEmailSubmit.disabled = false;
+
+    if (error) {
+      status.textContent = `更换邮箱失败：${error.message}`;
+      return;
+    }
+
+    changeEmailForm.hidden = true;
+    changeEmailForm.reset();
+    changeEmailButton?.setAttribute("aria-expanded", "false");
+    status.textContent = "确认邮件已发送到新旧邮箱；请依次打开两封邮件完成更换。";
   });
 
   signOutButton?.addEventListener("click", async () => {

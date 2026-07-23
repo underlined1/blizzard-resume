@@ -40,7 +40,19 @@
               <input id="cloud-login-email" data-cloud-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
               <button class="button button-primary" type="submit" data-cloud-login-button>发送登录链接</button>
             </form>
-            <div class="cloud-account" data-cloud-account hidden><span data-cloud-user>已登录</span><button class="utility-button" type="button" data-cloud-sign-out>退出登录</button></div>
+            <div class="cloud-account" data-cloud-account hidden>
+              <span data-cloud-user>已登录</span>
+              <div class="cloud-account-actions">
+                <button class="utility-button" type="button" data-cloud-change-email aria-expanded="false">更换邮箱</button>
+                <button class="utility-button" type="button" data-cloud-sign-out>退出登录</button>
+              </div>
+            </div>
+            <form class="cloud-email-change-form" data-cloud-email-change-form hidden>
+              <label class="sr-only" for="cloud-new-email">新登录邮箱</label>
+              <input id="cloud-new-email" data-cloud-new-email type="email" autocomplete="email" placeholder="输入新的登录邮箱" required />
+              <button class="button button-primary" type="submit" data-cloud-change-email-submit>发送确认邮件</button>
+              <button class="utility-button" type="button" data-cloud-cancel-email-change>取消</button>
+            </form>
           </section>
 
           <div class="calendar-layout">

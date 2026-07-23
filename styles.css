@@ -275,8 +275,9 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .cloud-sync-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .85fr); gap: 24px; align-items: center; margin: 29px 0 -2px; padding: 24px 27px; background: var(--ink); color: var(--paper); box-shadow: 7px 7px 0 var(--coral); }
 .cloud-sync-copy .section-kicker { color: var(--lime); }.cloud-sync-copy h3 { margin: 9px 0 7px; font-size: clamp(23px, 2.7vw, 34px); letter-spacing: -.06em; }.cloud-sync-copy > p:last-child { max-width: 520px; margin: 0; color: #c5d2d7; font: 10px/1.65 var(--mono); }
 .cloud-login-form { display: flex; gap: 9px; }.cloud-login-form input { min-width: 0; flex: 1; padding: 12px; border: 1px solid var(--paper); outline: 0; background: transparent; color: var(--paper); font: 12px var(--mono); }.cloud-login-form input::placeholder { color: #aebdc3; }.cloud-login-form input:focus { box-shadow: 3px 3px 0 var(--lime); }.cloud-login-form .button { padding: 12px; white-space: nowrap; background: var(--lime); color: var(--ink); font-size: 11px; }.cloud-login-form .button:hover { box-shadow: 4px 4px 0 var(--coral); }
-.cloud-account { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid #72868f; color: #d5e0e5; font: 11px var(--mono); }.cloud-account-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 8px; }.cloud-account .utility-button, .cloud-email-change-form .utility-button { color: var(--paper); border-color: #72868f; }.cloud-account .utility-button:hover, .cloud-email-change-form .utility-button:hover { color: var(--ink); background: var(--lime); border-color: var(--lime); }
+.cloud-account { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid #72868f; color: #d5e0e5; font: 11px var(--mono); }.cloud-account-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 8px; }.cloud-account .utility-button, .cloud-email-change-form .utility-button, .cloud-password-form .utility-button { color: var(--paper); border-color: #72868f; }.cloud-account .utility-button:hover, .cloud-email-change-form .utility-button:hover, .cloud-password-form .utility-button:hover { color: var(--ink); background: var(--lime); border-color: var(--lime); }
 .cloud-email-change-form { display: flex; gap: 9px; margin-top: 11px; }.cloud-email-change-form input { min-width: 0; flex: 1; padding: 12px; border: 1px solid var(--paper); outline: 0; background: transparent; color: var(--paper); font: 12px var(--mono); }.cloud-email-change-form input::placeholder { color: #aebdc3; }.cloud-email-change-form input:focus { box-shadow: 3px 3px 0 var(--lime); }.cloud-email-change-form .button { padding: 12px; white-space: nowrap; background: var(--lime); color: var(--ink); font-size: 11px; }.cloud-email-change-form .button:hover { box-shadow: 4px 4px 0 var(--coral); }
+.cloud-password-form { display: flex; gap: 9px; margin-top: 11px; }.cloud-password-form input { min-width: 0; flex: 1; padding: 12px; border: 1px solid var(--paper); outline: 0; background: transparent; color: var(--paper); font: 12px var(--mono); }.cloud-password-form input::placeholder { color: #aebdc3; }.cloud-password-form input:focus { box-shadow: 3px 3px 0 var(--lime); }.cloud-password-form .button { padding: 12px; white-space: nowrap; background: var(--lime); color: var(--ink); font-size: 11px; }.cloud-password-form .button:hover { box-shadow: 4px 4px 0 var(--coral); }
 .daily-log-panel textarea:disabled, .daily-actions button:disabled { cursor: not-allowed; opacity: .58; }.daily-log-panel textarea:disabled { background: #ebebeb; }
 
 @media (max-width: 840px) {
@@ -284,7 +285,7 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 }
 
 @media (max-width: 480px) {
-  .cloud-sync-panel { padding: 18px; }.cloud-login-form, .cloud-email-change-form { flex-direction: column; }.cloud-login-form .button, .cloud-email-change-form .button { width: 100%; }.cloud-account { align-items: flex-start; flex-direction: column; }.cloud-account-actions { justify-content: start; }
+  .cloud-sync-panel { padding: 18px; }.cloud-login-form, .cloud-email-change-form, .cloud-password-form { flex-direction: column; }.cloud-login-form .button, .cloud-email-change-form .button, .cloud-password-form .button { width: 100%; }.cloud-account { align-items: flex-start; flex-direction: column; }.cloud-account-actions { justify-content: start; }
 }
 
 /* Private check-in administration */
@@ -298,4 +299,11 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 
 @media (max-width: 480px) {
   .admin-auth-panel { padding: 18px; }.admin-login-form, .admin-dashboard-top { flex-direction: column; }.admin-login-form .button { width: 100%; }.admin-dashboard-top { gap: 16px; }.admin-account { align-items: start; flex-direction: column; white-space: normal; }.admin-editor-card, .admin-history-card { padding: 17px; }.admin-editor-actions { flex-direction: column; }.admin-entry-card { padding: 16px; }
+}
+
+/* Password-based sign-in and password setup */
+.admin-login-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }.admin-account-actions { display: flex; gap: 8px; }.admin-password-form { display: flex; gap: 9px; margin-top: 18px; padding: 16px; background: var(--ink); }.admin-password-form input { min-width: 0; flex: 1; padding: 13px; border: 1px solid var(--paper); border-radius: 0; outline: 0; background: transparent; color: var(--paper); font: 12px var(--mono); }.admin-password-form input::placeholder { color: #aebdc3; }.admin-password-form input:focus { box-shadow: 3px 3px 0 var(--coral); }.admin-password-form .button { padding: 12px; white-space: nowrap; background: var(--lime); color: var(--ink); font-size: 11px; }.admin-password-form .utility-button { color: var(--paper); border-color: #72868f; }.admin-password-form .utility-button:hover { color: var(--ink); background: var(--lime); border-color: var(--lime); }
+
+@media (max-width: 480px) {
+  .admin-login-form { grid-template-columns: 1fr; }.admin-password-form { flex-direction: column; }.admin-password-form .button { width: 100%; }
 }

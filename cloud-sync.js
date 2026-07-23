@@ -2,6 +2,7 @@
   const status = document.querySelector("[data-cloud-status]");
   const loginForm = document.querySelector("[data-cloud-login-form]");
   const loginEmail = document.querySelector("[data-cloud-login-email]");
+  const loginPassword = document.querySelector("[data-cloud-login-password]");
   const loginButton = document.querySelector("[data-cloud-login-button]");
   const account = document.querySelector("[data-cloud-account]");
   const cloudUser = document.querySelector("[data-cloud-user]");
@@ -10,6 +11,12 @@
   const newEmail = document.querySelector("[data-cloud-new-email]");
   const changeEmailSubmit = document.querySelector("[data-cloud-change-email-submit]");
   const cancelEmailChange = document.querySelector("[data-cloud-cancel-email-change]");
+  const setPasswordButton = document.querySelector("[data-cloud-set-password]");
+  const passwordForm = document.querySelector("[data-cloud-password-form]");
+  const newPassword = document.querySelector("[data-cloud-new-password]");
+  const confirmPassword = document.querySelector("[data-cloud-confirm-password]");
+  const savePassword = document.querySelector("[data-cloud-save-password]");
+  const cancelPassword = document.querySelector("[data-cloud-cancel-password]");
   const signOutButton = document.querySelector("[data-cloud-sign-out]");
   const storageKey = "blizzard-calendar-checkins-v1";
   const config = window.SUPABASE_CONFIG || {};
@@ -29,7 +36,10 @@
       account.hidden = false;
       changeEmailForm.hidden = true;
       changeEmailForm.reset();
+      passwordForm.hidden = true;
+      passwordForm.reset();
       changeEmailButton?.setAttribute("aria-expanded", "false");
+      setPasswordButton?.setAttribute("aria-expanded", "false");
       cloudUser.textContent = `已登录：${user.email || "云端账户"}`;
       return;
     }
@@ -37,7 +47,10 @@
     account.hidden = true;
     changeEmailForm.hidden = true;
     changeEmailForm.reset();
+    passwordForm.hidden = true;
+    passwordForm.reset();
     changeEmailButton?.setAttribute("aria-expanded", "false");
+    setPasswordButton?.setAttribute("aria-expanded", "false");
   };
 
   if (!isConfigured) {
@@ -149,7 +162,7 @@
     showAccount(activeUser);
     if (!activeUser) {
       setEditingAccess(false);
-      status.textContent = "请用自己的邮箱登录后，再查看和编辑云端学习记录。";
+      status.textContent = "请用自己的邮箱和密码登录后，再查看和编辑云端学习记录。";
       return;
     }
     await syncInitialRecords();
@@ -178,16 +191,55 @@
     event.preventDefault();
     const email = loginEmail.value.trim();
     if (!email) return;
+    const password = loginPassword.value;
+    if (!password) return;
     loginButton.disabled = true;
-    status.textContent = "正在发送登录链接…";
-    const { error } = await client.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.href }
-    });
+    status.textContent = "正在登录…";
+    const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
     status.textContent = error
-      ? `登录链接发送失败：${error.message}`
-      : "登录链接已发送到邮箱，请打开邮件完成登录。";
+      ? "登录失败：请检查邮箱和密码。"
+      : "登录成功，正在读取你的云端记录。";
+  });
+
+  setPasswordButton?.addEventListener("click", () => {
+    if (!activeUser) return;
+    const willShow = passwordForm.hidden;
+    passwordForm.hidden = !willShow;
+    setPasswordButton.setAttribute("aria-expanded", String(willShow));
+    status.textContent = willShow
+      ? "设置后可直接用邮箱和密码登录，不再发送邮件。"
+      : "云端同步已开启，打卡会自动保存。";
+    if (willShow) newPassword?.focus();
+  });
+
+  cancelPassword?.addEventListener("click", () => {
+    passwordForm.hidden = true;
+    passwordForm.reset();
+    setPasswordButton?.setAttribute("aria-expanded", "false");
+    status.textContent = "已取消设置密码。";
+  });
+
+  passwordForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const password = newPassword.value;
+    if (!activeUser || password.length < 8) return;
+    if (password !== confirmPassword.value) {
+      status.textContent = "两次输入的密码不一致。";
+      return;
+    }
+    savePassword.disabled = true;
+    status.textContent = "正在保存密码…";
+    const { error } = await client.auth.updateUser({ password });
+    savePassword.disabled = false;
+    if (error) {
+      status.textContent = `设置密码失败：${error.message}`;
+      return;
+    }
+    passwordForm.hidden = true;
+    passwordForm.reset();
+    setPasswordButton?.setAttribute("aria-expanded", "false");
+    status.textContent = "密码已设置。以后可直接用邮箱和密码登录。";
   });
 
   changeEmailButton?.addEventListener("click", () => {

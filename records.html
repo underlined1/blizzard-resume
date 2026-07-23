@@ -38,12 +38,15 @@
             <form class="cloud-login-form" data-cloud-login-form>
               <label class="sr-only" for="cloud-login-email">登录邮箱</label>
               <input id="cloud-login-email" data-cloud-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
-              <button class="button button-primary" type="submit" data-cloud-login-button>发送登录链接</button>
+              <label class="sr-only" for="cloud-login-password">登录密码</label>
+              <input id="cloud-login-password" data-cloud-login-password type="password" autocomplete="current-password" placeholder="输入你的密码" minlength="8" required />
+              <button class="button button-primary" type="submit" data-cloud-login-button>账号密码登录</button>
             </form>
             <div class="cloud-account" data-cloud-account hidden>
               <span data-cloud-user>已登录</span>
               <div class="cloud-account-actions">
                 <a class="utility-button" href="admin.html">管理后台</a>
+                <button class="utility-button" type="button" data-cloud-set-password aria-expanded="false">设置密码</button>
                 <button class="utility-button" type="button" data-cloud-change-email aria-expanded="false">更换邮箱</button>
                 <button class="utility-button" type="button" data-cloud-sign-out>退出登录</button>
               </div>
@@ -53,6 +56,14 @@
               <input id="cloud-new-email" data-cloud-new-email type="email" autocomplete="email" placeholder="输入新的登录邮箱" required />
               <button class="button button-primary" type="submit" data-cloud-change-email-submit>发送确认邮件</button>
               <button class="utility-button" type="button" data-cloud-cancel-email-change>取消</button>
+            </form>
+            <form class="cloud-password-form" data-cloud-password-form hidden>
+              <label class="sr-only" for="cloud-new-password">新密码</label>
+              <input id="cloud-new-password" data-cloud-new-password type="password" autocomplete="new-password" minlength="8" placeholder="设置至少 8 位的新密码" required />
+              <label class="sr-only" for="cloud-confirm-password">确认新密码</label>
+              <input id="cloud-confirm-password" data-cloud-confirm-password type="password" autocomplete="new-password" minlength="8" placeholder="再次输入新密码" required />
+              <button class="button button-primary" type="submit" data-cloud-save-password>保存密码</button>
+              <button class="utility-button" type="button" data-cloud-cancel-password>取消</button>
             </form>
           </section>
 

@@ -29,19 +29,29 @@
         </section>
 
         <section class="admin-auth-panel reveal" data-admin-login-panel aria-labelledby="admin-login-title">
-          <div><p class="section-kicker">OWNER ACCESS</p><h2 id="admin-login-title">进入管理后台</h2><p data-admin-login-status>请输入你的登录邮箱，系统会发送一次性登录链接。</p></div>
+          <div><p class="section-kicker">OWNER ACCESS</p><h2 id="admin-login-title">进入管理后台</h2><p data-admin-login-status>输入你的邮箱和密码，直接进入个人管理区。</p></div>
           <form class="admin-login-form" data-admin-login-form>
             <label class="sr-only" for="admin-login-email">登录邮箱</label>
             <input id="admin-login-email" data-admin-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
-            <button class="button button-primary" type="submit" data-admin-login-button>发送登录链接</button>
+            <label class="sr-only" for="admin-login-password">登录密码</label>
+            <input id="admin-login-password" data-admin-login-password type="password" autocomplete="current-password" placeholder="输入你的密码" minlength="8" required />
+            <button class="button button-primary" type="submit" data-admin-login-button>账号密码登录</button>
           </form>
         </section>
 
         <section class="admin-dashboard reveal" data-admin-dashboard hidden aria-labelledby="admin-dashboard-title">
           <div class="admin-dashboard-top">
             <div><p class="section-kicker">CLOUD DASHBOARD</p><h2 id="admin-dashboard-title">记录管理</h2><p data-admin-status aria-live="polite">正在读取你的云端记录…</p></div>
-            <div class="admin-account"><span data-admin-user>已登录</span><button class="utility-button" type="button" data-admin-sign-out>退出登录</button></div>
+            <div class="admin-account"><span data-admin-user>已登录</span><div class="admin-account-actions"><button class="utility-button" type="button" data-admin-set-password aria-expanded="false">设置密码</button><button class="utility-button" type="button" data-admin-sign-out>退出登录</button></div></div>
           </div>
+          <form class="admin-password-form" data-admin-password-form hidden>
+            <label class="sr-only" for="admin-new-password">新密码</label>
+            <input id="admin-new-password" data-admin-new-password type="password" autocomplete="new-password" minlength="8" placeholder="设置至少 8 位的新密码" required />
+            <label class="sr-only" for="admin-confirm-password">确认新密码</label>
+            <input id="admin-confirm-password" data-admin-confirm-password type="password" autocomplete="new-password" minlength="8" placeholder="再次输入新密码" required />
+            <button class="button button-primary" type="submit" data-admin-save-password>保存密码</button>
+            <button class="utility-button" type="button" data-admin-cancel-password>取消</button>
+          </form>
 
           <div class="admin-workspace">
             <section class="admin-editor-card" aria-labelledby="admin-editor-title">

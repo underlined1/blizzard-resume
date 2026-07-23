@@ -3,10 +3,17 @@
   const loginStatus = document.querySelector("[data-admin-login-status]");
   const loginForm = document.querySelector("[data-admin-login-form]");
   const loginEmail = document.querySelector("[data-admin-login-email]");
+  const loginPassword = document.querySelector("[data-admin-login-password]");
   const loginButton = document.querySelector("[data-admin-login-button]");
   const dashboard = document.querySelector("[data-admin-dashboard]");
   const status = document.querySelector("[data-admin-status]");
   const adminUser = document.querySelector("[data-admin-user]");
+  const setPasswordButton = document.querySelector("[data-admin-set-password]");
+  const passwordForm = document.querySelector("[data-admin-password-form]");
+  const newPassword = document.querySelector("[data-admin-new-password]");
+  const confirmPassword = document.querySelector("[data-admin-confirm-password]");
+  const savePassword = document.querySelector("[data-admin-save-password]");
+  const cancelPassword = document.querySelector("[data-admin-cancel-password]");
   const signOutButton = document.querySelector("[data-admin-sign-out]");
   const entryForm = document.querySelector("[data-admin-entry-form]");
   const entryDate = document.querySelector("[data-admin-entry-date]");
@@ -49,6 +56,9 @@
     activeUser = user || null;
     loginPanel.hidden = Boolean(activeUser);
     dashboard.hidden = !activeUser;
+    passwordForm.hidden = true;
+    passwordForm.reset();
+    setPasswordButton?.setAttribute("aria-expanded", "false");
     if (activeUser) adminUser.textContent = `已登录：${activeUser.email || "云端账户"}`;
   };
 
@@ -164,16 +174,55 @@
     event.preventDefault();
     const email = loginEmail.value.trim();
     if (!email) return;
+    const password = loginPassword.value;
+    if (!password) return;
     loginButton.disabled = true;
-    loginStatus.textContent = "正在发送登录链接…";
-    const { error } = await client.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.href }
-    });
+    loginStatus.textContent = "正在登录…";
+    const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
     loginStatus.textContent = error
-      ? `登录链接发送失败：${error.message}`
-      : "登录链接已发送，请打开邮件后回到此页面。";
+      ? "登录失败：请检查邮箱和密码。"
+      : "登录成功，正在进入管理后台。";
+  });
+
+  setPasswordButton.addEventListener("click", () => {
+    if (!activeUser) return;
+    const willShow = passwordForm.hidden;
+    passwordForm.hidden = !willShow;
+    setPasswordButton.setAttribute("aria-expanded", String(willShow));
+    status.textContent = willShow
+      ? "设置后可直接用邮箱和密码登录，不再发送邮件。"
+      : "云端记录已加载。";
+    if (willShow) newPassword.focus();
+  });
+
+  cancelPassword.addEventListener("click", () => {
+    passwordForm.hidden = true;
+    passwordForm.reset();
+    setPasswordButton.setAttribute("aria-expanded", "false");
+    status.textContent = "已取消设置密码。";
+  });
+
+  passwordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const password = newPassword.value;
+    if (!activeUser || password.length < 8) return;
+    if (password !== confirmPassword.value) {
+      status.textContent = "两次输入的密码不一致。";
+      return;
+    }
+    savePassword.disabled = true;
+    status.textContent = "正在保存密码…";
+    const { error } = await client.auth.updateUser({ password });
+    savePassword.disabled = false;
+    if (error) {
+      status.textContent = `设置密码失败：${error.message}`;
+      return;
+    }
+    passwordForm.hidden = true;
+    passwordForm.reset();
+    setPasswordButton.setAttribute("aria-expanded", "false");
+    status.textContent = "密码已设置。以后可直接用邮箱和密码登录。";
   });
 
   entryForm.addEventListener("submit", async (event) => {

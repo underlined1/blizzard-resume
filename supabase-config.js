@@ -4,6 +4,6 @@
  * supabase/schema.sql. Never put a secret or service_role key here.
  */
 window.SUPABASE_CONFIG = Object.freeze({
-  url: "",
-  publishableKey: ""
+  url: "https://vjhwcidwjriipocmxzsi.supabase.co",
+  publishableKey: "sb_publishable_W1g1329Cv-fyBA-9pULRJg_uK_sw01m"
 });

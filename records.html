@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102633" />
+    <meta name="description" content="暴风雪的学习与工作记录。" />
+    <title>学习记录 · 暴风雪</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="site-page page-records">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="返回首页"><span class="brand-mark" aria-hidden="true">❄</span><span>暴风雪</span></a>
+        <nav class="desktop-nav" aria-label="主导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html" aria-current="page">记录</a><a href="about.html">关于</a></nav>
+        <a class="header-cta" href="contact.html">联系我 <span aria-hidden="true">→</span></a>
+        <details class="mobile-menu"><summary aria-label="打开导航">菜单</summary><nav aria-label="移动端导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html" aria-current="page">记录</a><a href="about.html">关于</a><a href="contact.html">联系我</a></nav></details>
+      </header>
+
+      <main class="page-main records-main">
+        <section class="page-intro reveal" aria-labelledby="records-title"><p class="section-kicker">03 / STUDY &amp; WORK LOG</p><h1 id="records-title">把每一天，<br /><em>记成可回望的片段。</em></h1><p>这是属于自己的学习与工作地图。登录后，打卡和笔记会安全同步到云端；换设备时，也能继续写下去。</p></section>
+
+        <section class="poetry-banner reveal" aria-labelledby="poem-title">
+          <div><p class="section-kicker">DAILY VERSE</p><h2 id="poem-title">给今天一句古诗。</h2></div>
+          <blockquote><p data-poem-text>「长风破浪会有时，直挂云帆济沧海。」</p><cite data-poem-source>— 李白《行路难》</cite></blockquote>
+          <button class="poem-button" type="button" data-shuffle-poem>换一句 <span aria-hidden="true">↻</span></button>
+        </section>
+
+        <section class="record-section calendar-records reveal delay-1" aria-labelledby="calendar-title">
+          <div class="record-heading"><div><p class="section-kicker">DAILY CHECK-IN</p><h2 id="calendar-title">把努力，<br />落在每一天。</h2></div><p class="record-hint">点选日期，打卡并写下当天的学习或工作</p></div>
+
+          <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
+            <div class="cloud-sync-copy"><p class="section-kicker">PRIVATE CLOUD SYNC</p><h3 id="cloud-sync-title">你的记录，只属于你。</h3><p data-cloud-status>正在检查云端连接…</p></div>
+            <form class="cloud-login-form" data-cloud-login-form>
+              <label class="sr-only" for="cloud-login-email">登录邮箱</label>
+              <input id="cloud-login-email" data-cloud-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
+              <button class="button button-primary" type="submit" data-cloud-login-button>发送登录链接</button>
+            </form>
+            <div class="cloud-account" data-cloud-account hidden><span data-cloud-user>已登录</span><button class="utility-button" type="button" data-cloud-sign-out>退出登录</button></div>
+          </section>
+
+          <div class="calendar-layout">
+            <section class="calendar-panel" aria-label="学习打卡日历">
+              <div class="calendar-toolbar">
+                <button class="calendar-nav" type="button" data-calendar-prev aria-label="上一个月">←</button>
+                <div><p class="section-kicker">STUDY CALENDAR</p><h3 data-calendar-month>--</h3></div>
+                <button class="calendar-nav" type="button" data-calendar-next aria-label="下一个月">→</button>
+              </div>
+              <div class="calendar-weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+              <div class="calendar-grid" data-calendar-grid role="grid" aria-label="每日打卡日历"></div>
+              <p class="calendar-legend"><span><i class="legend-dot legend-today"></i> 今天</span><span><i class="legend-dot legend-check"></i> 已打卡</span><span data-month-checkin-count>本月 0 天</span></p>
+            </section>
+
+            <aside class="daily-log-panel" aria-label="当日记录">
+              <p class="section-kicker">TODAY'S NOTE</p>
+              <h3 data-selected-date>选择一天开始记录</h3>
+              <div class="checkin-metrics" aria-label="打卡统计">
+                <div><strong data-checkin-streak>0</strong><span>连续打卡</span></div>
+                <div><strong data-checkin-total>0</strong><span>累计打卡</span></div>
+              </div>
+              <label class="daily-note-label" for="daily-note">今天做了什么？</label>
+              <textarea id="daily-note" data-daily-note rows="7" maxlength="1000" placeholder="例如：完成了一个 Python 小练习；健身训练 40 分钟；明天继续整理作品集……"></textarea>
+              <div class="daily-actions"><button class="utility-button" type="button" data-save-daily-note>保存文字</button><button class="button button-primary" type="button" data-checkin-button>今日打卡 <span aria-hidden="true">✓</span></button></div>
+              <p class="daily-status" data-daily-status aria-live="polite">每天的积累，都会留在这张日历上。</p>
+            </aside>
+          </div>
+          <p class="record-footnote">登录后，打卡和文字记录会加密传输并保存至你的 Supabase 数据库；未登录时，内容只暂存于当前浏览器。</p>
+        </section>
+      </main>
+      <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>WRITE IT DOWN.</span><a href="index.html">BACK HOME →</a></footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+    <script src="cloud-sync.js"></script>
+  </body>
+</html>

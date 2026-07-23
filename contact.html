@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101219" />
+    <meta name="description" content="联系暴风雪。" />
+    <title>联系我 · 暴风雪</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="site-page page-contact">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="返回首页"><span class="brand-mark" aria-hidden="true">❄</span><span>暴风雪</span></a>
+        <nav class="desktop-nav" aria-label="主导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html">记录</a><a href="about.html">关于</a></nav>
+        <a class="header-cta" href="contact.html" aria-current="page">联系我 <span aria-hidden="true">→</span></a>
+        <details class="mobile-menu"><summary aria-label="打开导航">菜单</summary><nav aria-label="移动端导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html">记录</a><a href="about.html">关于</a><a href="contact.html" aria-current="page">联系我</a></nav></details>
+      </header>
+
+      <main class="contact-main">
+        <section class="contact-page-hero reveal" aria-labelledby="contact-title"><p class="section-kicker">03 / CONTACT</p><h1 id="contact-title">如果你也在做<br /><em>值得分享的事。</em></h1><p>欢迎从 GitHub 关注我的更新，或给我发一封邮件。这个页面保留得很简单，是为了让联系本身更直接。</p></section>
+        <section class="contact-options reveal delay-1" aria-label="联系渠道">
+          <a class="contact-option github-option" href="https://github.com/underlined1" target="_blank" rel="noreferrer"><span>01 / GITHUB</span><strong>github.com/<br />underlined1</strong><b aria-hidden="true">↗</b></a>
+          <!-- 将下面的邮箱替换成你自己的真实邮箱；也请同步替换 data-copy-email 中的地址。 -->
+          <div class="contact-option email-option"><span>02 / EMAIL</span><strong>your-email<br />@example.com</strong><div><a class="text-link" href="mailto:your-email@example.com">写邮件 →</a><button class="copy-button" type="button" data-copy-email="your-email@example.com">复制邮箱</button></div></div>
+        </section>
+        <p class="contact-reminder reveal delay-2">发布前记得将 <code>your-email@example.com</code> 替换为你的真实邮箱。</p>
+      </main>
+      <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>THANKS FOR STOPPING BY.</span><a href="index.html">BACK HOME →</a></footer>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

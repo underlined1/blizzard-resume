@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102633" />
+    <meta name="description" content="暴风雪的个人网站：作品、爱好、学习与工作记录。" />
+    <title>暴风雪 · 个人网站</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="site-page page-home">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="返回首页"><span class="brand-mark" aria-hidden="true">❄</span><span>暴风雪</span></a>
+        <nav class="desktop-nav" aria-label="主导航">
+          <a href="index.html" aria-current="page">首页</a>
+          <a href="projects.html">项目</a>
+          <a href="records.html">记录</a>
+          <a href="about.html">关于</a>
+        </nav>
+        <a class="header-cta" href="contact.html">联系我 <span aria-hidden="true">→</span></a>
+        <details class="mobile-menu">
+          <summary aria-label="打开导航">菜单</summary>
+          <nav aria-label="移动端导航"><a href="index.html" aria-current="page">首页</a><a href="projects.html">项目</a><a href="records.html">记录</a><a href="about.html">关于</a><a href="contact.html">联系我</a></nav>
+        </details>
+      </header>
+
+      <main>
+        <section class="page-hero home-hero" aria-labelledby="hero-title">
+          <div class="hero-copy reveal">
+            <p class="eyebrow"><span class="pulse"></span> 「长风破浪会有时，直挂云帆济沧海。」</p>
+            <h1 id="hero-title">在风雪里，<br /><em>慢慢写下自己的山河。</em></h1>
+            <p class="hero-intro">这里放着我正在完成的项目、让我心动的爱好，以及每一段值得回望的学习与工作记录。愿每一次积累，都成为下一次出发的底气。</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="records.html">翻开学习记录 <span aria-hidden="true">→</span></a>
+              <a class="text-link" href="about.html">认识我 <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+
+          <aside class="hero-proof-card reveal delay-1" aria-label="网站概览">
+            <div class="card-topline"><span>SNOWFALL / ONGOING</span><span class="live-dot">✦</span></div>
+            <div class="identity-row"><div class="avatar" aria-hidden="true">❄</div><div><p class="name">暴风雪</p><p class="role">Learner · Creator · Observer</p></div></div>
+            <div class="local-clock" aria-live="polite">
+              <span>LOCAL TIME</span>
+              <time data-live-clock datetime="">--:--:--</time>
+              <small data-live-date>正在读取日期</small>
+            </div>
+            <div class="quick-stats"><div><strong>01</strong><span>个人网站</span></div><div><strong>04</strong><span>兴趣角落</span></div><div><strong>∞</strong><span>慢慢积累</span></div></div>
+            <div class="signal-row"><span>下一站</span><div class="signal-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><b>RECORDS</b></div>
+            <p class="card-note">在忙碌和风雪之间，留一个能安静记录、自在表达的小小角落。</p>
+          </aside>
+        </section>
+
+        <section class="ticker" aria-label="网站主题"><div class="ticker-track"><span>读万卷书</span><i>✦</i><span>行万里路</span><i>✦</i><span>心有山海</span><i>✦</i><span>静待花开</span><i>✦</i><span>读万卷书</span><i>✦</i><span>行万里路</span><i>✦</i><span>心有山海</span><i>✦</i><span>静待花开</span><i>✦</i></div></section>
+
+        <section class="section home-paths" aria-labelledby="paths-title">
+          <div class="section-heading reveal"><p class="section-kicker">START HERE</p><div class="heading-line"><h2 id="paths-title">从喜欢的事开始，<br /><em>也把走过的路记下来。</em></h2><p>作品是正在做的事，爱好是生活里的光，学习记录则把那些看不见的努力慢慢留住。</p></div></div>
+          <div class="path-grid">
+            <a class="path-card path-card-projects reveal" href="projects.html"><span class="path-index">01 / PROJECTS</span><h3>项目<br />档案</h3><p>记录正在构建的项目，以及一次次从想法到落地的尝试。</p><span class="path-arrow" aria-hidden="true">→</span></a>
+            <a class="path-card path-card-about reveal delay-1" href="#hobbies"><span class="path-index">02 / HOBBIES</span><h3>我的<br />爱好</h3><p>诗词、音乐、影像与探索，让日常始终有值得期待的方向。</p><span class="path-arrow" aria-hidden="true">→</span></a>
+            <a class="path-card path-card-contact reveal delay-2" href="records.html"><span class="path-index">03 / RECORDS</span><h3>学习<br />记录</h3><p>随时编辑、持续保存，把学习和工作的片段变成自己的轨迹。</p><span class="path-arrow" aria-hidden="true">→</span></a>
+          </div>
+        </section>
+
+        <section class="hobby-section" id="hobbies" aria-labelledby="hobbies-title">
+          <div class="section hobby-inner">
+            <div class="section-heading reveal"><p class="section-kicker">THINGS I LOVE</p><div class="heading-line"><h2 id="hobbies-title">我的爱好，<br /><em>是生活的留白。</em></h2><p>这里可以随着时间替换成真正喜欢的事：一首反复听的歌、一本读完的书、一段出发的旅程。</p></div></div>
+            <div class="hobby-grid">
+              <article class="hobby-card hobby-poetry reveal"><span>01 / POETRY</span><b>诗词</b><p>在古人的字句里，借一点清醒和辽阔。</p><i aria-hidden="true">「明月松间照」</i></article>
+              <article class="hobby-card hobby-music reveal delay-1"><span>02 / MUSIC</span><b>音乐</b><p>给此刻选一首歌，让页面也有自己的节奏。</p><i aria-hidden="true">♫</i></article>
+              <article class="hobby-card hobby-reading reveal delay-2"><span>03 / READING</span><b>阅读</b><p>把好奇心放进书页，慢慢认识更大的世界。</p><i aria-hidden="true">↗</i></article>
+              <article class="hobby-card hobby-fitness reveal delay-3"><span>04 / FITNESS</span><b>健身</b><p>在一次次训练里，积蓄更稳定、更有力量的自己。</p><i aria-hidden="true">✦</i></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section music-section reveal" aria-labelledby="music-title">
+          <div class="music-copy"><p class="section-kicker">MY SOUND CORNER</p><h2 id="music-title">让喜欢的歌，<br /><em>陪着这个角落。</em></h2><p>选择一首本地音频，即可直接在这里播放。每次访问都可以换成当下最想听的那一首。</p></div>
+          <div class="music-player-card">
+            <div class="music-disc" aria-hidden="true"><span>❄</span></div>
+            <p class="music-label">NOW PLAYING / YOUR CHOICE</p>
+            <audio class="music-player" controls data-music-player aria-label="音乐播放器"></audio>
+            <label class="music-upload"><input type="file" accept="audio/*" data-music-upload /><span>上传我的音乐</span><b aria-hidden="true">＋</b></label>
+            <p class="music-status" data-music-status>尚未选择音乐。</p>
+            <p class="music-note">音频只会在当前浏览器会话中播放，不会上传到网站。</p>
+          </div>
+        </section>
+
+        <section class="home-note reveal" aria-labelledby="note-title"><p class="section-kicker">A SMALL PROMISE</p><h2 id="note-title">每一段认真走过的路，<br /><em>都值得被好好记下。</em></h2><a class="text-link" href="records.html">开始写今天的记录 <span aria-hidden="true">→</span></a></section>
+      </main>
+
+      <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>KEEP GOING, GENTLY.</span><a href="records.html">OPEN RECORDS →</a></footer>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

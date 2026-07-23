@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102633" />
+    <meta name="description" content="暴风雪个人简历网站的学习打卡管理后台。" />
+    <title>管理后台 · 暴风雪</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="site-page page-admin">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="返回首页"><span class="brand-mark" aria-hidden="true">✦</span><span>暴风雪</span></a>
+        <nav class="desktop-nav" aria-label="主导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html">记录</a><a href="about.html">关于</a></nav>
+        <a class="header-cta" href="records.html">返回记录 <span aria-hidden="true">↗</span></a>
+        <details class="mobile-menu"><summary aria-label="打开导航">菜单</summary><nav aria-label="移动端导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html">记录</a><a href="about.html">关于</a></nav></details>
+      </header>
+
+      <main class="page-main admin-main">
+        <section class="page-intro admin-intro reveal" aria-labelledby="admin-title">
+          <p class="section-kicker">PRIVATE ADMIN / 04</p>
+          <h1 id="admin-title">把每一次打卡，<br /><em>认真写进后台。</em></h1>
+          <p>这里是你的个人管理区。用自己的邮箱登录后，可以管理所有学习与工作记录；每一条只会保存到你的云端账户。</p>
+        </section>
+
+        <section class="admin-auth-panel reveal" data-admin-login-panel aria-labelledby="admin-login-title">
+          <div><p class="section-kicker">OWNER ACCESS</p><h2 id="admin-login-title">进入管理后台</h2><p data-admin-login-status>请输入你的登录邮箱，系统会发送一次性登录链接。</p></div>
+          <form class="admin-login-form" data-admin-login-form>
+            <label class="sr-only" for="admin-login-email">登录邮箱</label>
+            <input id="admin-login-email" data-admin-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
+            <button class="button button-primary" type="submit" data-admin-login-button>发送登录链接</button>
+          </form>
+        </section>
+
+        <section class="admin-dashboard reveal" data-admin-dashboard hidden aria-labelledby="admin-dashboard-title">
+          <div class="admin-dashboard-top">
+            <div><p class="section-kicker">CLOUD DASHBOARD</p><h2 id="admin-dashboard-title">记录管理</h2><p data-admin-status aria-live="polite">正在读取你的云端记录…</p></div>
+            <div class="admin-account"><span data-admin-user>已登录</span><button class="utility-button" type="button" data-admin-sign-out>退出登录</button></div>
+          </div>
+
+          <div class="admin-workspace">
+            <section class="admin-editor-card" aria-labelledby="admin-editor-title">
+              <div class="admin-card-heading"><div><p class="section-kicker">WRITE A CHECK-IN</p><h3 id="admin-editor-title">写下今天</h3></div><button class="utility-button" type="button" data-admin-new-entry>新建一条</button></div>
+              <form data-admin-entry-form>
+                <label class="admin-field-label" for="admin-entry-date">日期</label>
+                <input id="admin-entry-date" data-admin-entry-date type="date" required />
+                <label class="admin-field-label" for="admin-entry-note">学习 / 工作内容</label>
+                <textarea id="admin-entry-note" data-admin-entry-note rows="9" maxlength="1000" placeholder="例如：完成 Python 数据分析练习；健身训练 40 分钟；整理本周笔记…"></textarea>
+                <label class="admin-check-toggle"><input type="checkbox" data-admin-entry-checked checked /><span>这一天已完成打卡</span></label>
+                <div class="admin-editor-actions"><button class="button button-primary" type="submit" data-admin-save-entry>保存到云端</button><button class="utility-button" type="button" data-admin-delete-entry hidden>删除这条</button></div>
+              </form>
+            </section>
+
+            <section class="admin-history-card" aria-labelledby="admin-history-title">
+              <div class="admin-card-heading"><div><p class="section-kicker">YOUR ARCHIVE</p><h3 id="admin-history-title">全部记录</h3></div><span class="admin-record-count" data-admin-record-count>0 条</span></div>
+              <div class="admin-entry-list" data-admin-entry-list aria-live="polite"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+      <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>PRIVATE LOGBOOK.</span><a href="records.html">VIEW CALENDAR ↗</a></footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

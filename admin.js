@@ -33,6 +33,7 @@
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
+  const adminEmailHash = String(config.adminEmailHash || "").toLowerCase();
 
   if (!loginPanel || !isConfigured || !window.supabase?.createClient) {
     if (loginStatus) loginStatus.textContent = "后台尚未完成云端配置，请检查 Supabase 设置后刷新页面。";
@@ -45,6 +46,17 @@
   let selectedDate = null;
   let selectedRecordId = null;
   let currentMusic = null;
+  let sessionVersion = 0;
+
+  const isOwnerEmail = async (email) => {
+    if (!email || !/^[a-f0-9]{64}$/.test(adminEmailHash) || !window.crypto?.subtle || typeof TextEncoder === "undefined") {
+      return false;
+    }
+    const value = new TextEncoder().encode(email.trim().toLowerCase());
+    const digest = await window.crypto.subtle.digest("SHA-256", value);
+    const hash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hash === adminEmailHash;
+  };
 
   const isoToday = () => {
     const now = new Date();
@@ -177,6 +189,29 @@
     status.textContent = "记录已从云端删除。";
   };
 
+  const activateSession = async (session) => {
+    const version = ++sessionVersion;
+    const user = session?.user;
+    if (!user) {
+      setDashboard(null);
+      return;
+    }
+
+    const isOwner = await isOwnerEmail(user.email);
+    if (version !== sessionVersion) return;
+    if (!isOwner) {
+      setDashboard(null);
+      loginStatus.textContent = "此邮箱没有管理后台权限。";
+      await client.auth.signOut({ scope: "local" });
+      return;
+    }
+
+    setDashboard(user);
+    resetEditor();
+    void fetchRecords();
+    void fetchMusic();
+  };
+
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = loginEmail.value.trim();
@@ -184,6 +219,12 @@
     const password = loginPassword.value;
     if (!password) return;
     loginButton.disabled = true;
+    const isOwner = await isOwnerEmail(email);
+    if (!isOwner) {
+      loginButton.disabled = false;
+      loginStatus.textContent = "此邮箱没有管理后台权限。";
+      return;
+    }
     loginStatus.textContent = "正在登录…";
     const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
@@ -341,21 +382,9 @@
     loginStatus.textContent = error ? `退出失败：${error.message}` : "已退出管理后台。";
   });
 
-  client.auth.onAuthStateChange((_event, session) => {
-    setDashboard(session?.user);
-    if (session?.user) {
-      resetEditor();
-      void fetchRecords();
-      void fetchMusic();
-    }
-  });
+  client.auth.onAuthStateChange((_event, session) => void activateSession(session));
 
   client.auth.getSession().then(({ data }) => {
-    setDashboard(data.session?.user);
-    if (data.session?.user) {
-      resetEditor();
-      void fetchRecords();
-      void fetchMusic();
-    }
+    void activateSession(data.session);
   });
 })();

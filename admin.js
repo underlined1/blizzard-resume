@@ -31,6 +31,18 @@
   const saveMusic = document.querySelector("[data-admin-save-music]");
   const musicStatus = document.querySelector("[data-admin-music-status]");
   const musicPreview = document.querySelector("[data-admin-music-preview]");
+  const projectForm = document.querySelector("[data-admin-project-form]");
+  const projectName = document.querySelector("[data-admin-project-name]");
+  const projectUrl = document.querySelector("[data-admin-project-url]");
+  const projectSummary = document.querySelector("[data-admin-project-summary]");
+  const projectFile = document.querySelector("[data-admin-project-file]");
+  const projectCurrentFile = document.querySelector("[data-admin-project-current-file]");
+  const saveProject = document.querySelector("[data-admin-save-project]");
+  const newProject = document.querySelector("[data-admin-new-project]");
+  const deleteProjectButton = document.querySelector("[data-admin-delete-project]");
+  const projectStatus = document.querySelector("[data-admin-project-status]");
+  const projectList = document.querySelector("[data-admin-project-list]");
+  const projectCount = document.querySelector("[data-admin-project-count]");
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -46,6 +58,8 @@
   let selectedDate = null;
   let selectedRecordId = null;
   let currentMusic = null;
+  let projects = [];
+  let selectedProject = null;
   let sessionVersion = 0;
   let passwordRecoveryActive = false;
 
@@ -66,6 +80,19 @@
     day: "numeric",
     weekday: "short"
   }).format(new Date(`${date}T00:00:00`));
+
+  const validExternalUrl = (value) => {
+    if (!value) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const projectFileUrl = (path) => client.storage.from("site-project-files").getPublicUrl(path).data.publicUrl;
+  const projectMimeTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]);
 
   const setDashboard = (user) => {
     activeUser = user || null;
@@ -129,6 +156,7 @@
     selectedDate = null;
     selectedRecordId = null;
     entryForm.reset();
+    entryDate.max = isoToday();
     entryDate.value = isoToday();
     entryChecked.checked = true;
     deleteEntry.hidden = true;
@@ -147,6 +175,131 @@
     saveEntry.textContent = "更新这条记录";
     entryForm.scrollIntoView({ behavior: "smooth", block: "center" });
     entryNote.focus();
+  };
+
+  const showCurrentProjectFile = (project) => {
+    projectCurrentFile.replaceChildren();
+    if (!project?.file_path) {
+      projectCurrentFile.hidden = true;
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = projectFileUrl(project.file_path);
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = `当前文件：${project.file_name || "打开查看"} ↗`;
+    projectCurrentFile.append(link);
+    projectCurrentFile.hidden = false;
+  };
+
+  const resetProjectEditor = () => {
+    selectedProject = null;
+    projectForm.reset();
+    saveProject.textContent = "发布作品";
+    deleteProjectButton.hidden = true;
+    showCurrentProjectFile(null);
+  };
+
+  const createProjectCard = (project) => {
+    const article = document.createElement("article");
+    article.className = "admin-project-entry";
+    const top = document.createElement("div");
+    top.className = "admin-entry-card-top";
+    const title = document.createElement("strong");
+    title.textContent = project.title;
+    const created = document.createElement("span");
+    created.className = "admin-entry-badge";
+    created.textContent = new Intl.DateTimeFormat("zh-CN", { month: "short", day: "numeric" }).format(new Date(project.created_at));
+    top.append(title, created);
+    article.append(top);
+
+    if (project.summary) {
+      const summary = document.createElement("p");
+      summary.textContent = project.summary;
+      article.append(summary);
+    }
+
+    const links = document.createElement("div");
+    links.className = "admin-project-links";
+    const externalUrl = validExternalUrl(project.project_url);
+    if (externalUrl) {
+      const link = document.createElement("a");
+      link.href = externalUrl;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.textContent = "作品链接 ↗";
+      links.append(link);
+    }
+    if (project.file_path) {
+      const file = document.createElement("a");
+      file.href = projectFileUrl(project.file_path);
+      file.target = "_blank";
+      file.rel = "noreferrer";
+      file.textContent = "上传文件 ↗";
+      links.append(file);
+    }
+    if (links.childElementCount) article.append(links);
+
+    const actions = document.createElement("div");
+    actions.className = "admin-entry-card-actions";
+    const edit = document.createElement("button");
+    edit.className = "utility-button";
+    edit.type = "button";
+    edit.dataset.adminEditProject = project.id;
+    edit.textContent = "编辑";
+    const remove = document.createElement("button");
+    remove.className = "utility-button";
+    remove.type = "button";
+    remove.dataset.adminDeleteProject = project.id;
+    remove.textContent = "删除";
+    actions.append(edit, remove);
+    article.append(actions);
+    return article;
+  };
+
+  const renderProjects = () => {
+    projectCount.textContent = `${projects.length} 件`;
+    projectList.replaceChildren();
+    if (!projects.length) {
+      const empty = document.createElement("p");
+      empty.className = "admin-empty-state";
+      empty.textContent = "还没有发布作品。用上方表单发布第一个吧。";
+      projectList.append(empty);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    projects.forEach((project) => fragment.append(createProjectCard(project)));
+    projectList.append(fragment);
+  };
+
+  const fetchProjects = async () => {
+    if (!activeUser) return;
+    const { data, error } = await client
+      .from("site_projects")
+      .select("id, owner_id, title, summary, project_url, file_path, file_name, created_at, updated_at")
+      .order("created_at", { ascending: false });
+    if (error) {
+      projectStatus.textContent = "作品功能尚未配置，请先执行 supabase/site-projects.sql。";
+      return;
+    }
+    projects = data || [];
+    renderProjects();
+    projectStatus.textContent = projects.length ? "已加载已发布的作品。" : "可以发布第一件作品了。";
+  };
+
+  const editProject = (id) => {
+    const project = projects.find((item) => item.id === id);
+    if (!project) return;
+    selectedProject = project;
+    projectName.value = project.title;
+    projectUrl.value = project.project_url || "";
+    projectSummary.value = project.summary || "";
+    projectFile.value = "";
+    saveProject.textContent = "更新作品";
+    deleteProjectButton.hidden = false;
+    showCurrentProjectFile(project);
+    projectForm.scrollIntoView({ behavior: "smooth", block: "center" });
+    projectName.focus();
   };
 
   const fetchRecords = async () => {
@@ -215,6 +368,7 @@
     }
     void fetchRecords();
     void fetchMusic();
+    void fetchProjects();
   };
 
   loginForm.addEventListener("submit", async (event) => {
@@ -296,6 +450,10 @@
     if (!activeUser) return;
     const date = entryDate.value;
     if (!date) return;
+    if (selectedRecordId && selectedDate !== date && records.some((item) => item.checkin_date === date && item.id !== selectedRecordId)) {
+      status.textContent = "该日期已有一条记录；请先在右侧找到它并编辑，避免覆盖原内容。";
+      return;
+    }
     saveEntry.disabled = true;
     status.textContent = "正在保存到云端…";
     const changes = {
@@ -327,6 +485,94 @@
 
   newEntry.addEventListener("click", resetEditor);
   deleteEntry.addEventListener("click", () => void deleteRecord(selectedDate || entryDate.value));
+
+  projectForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!activeUser) return;
+    const title = projectName.value.trim();
+    const summary = projectSummary.value.trim();
+    const requestedUrl = projectUrl.value.trim();
+    const externalUrl = validExternalUrl(requestedUrl);
+    const file = projectFile.files?.[0];
+    if (!title) return;
+    if (requestedUrl && !externalUrl) {
+      projectStatus.textContent = "作品链接需要以 http:// 或 https:// 开头。";
+      projectUrl.focus();
+      return;
+    }
+    if (file && (!projectMimeTypes.has(file.type) || file.size > 8 * 1024 * 1024)) {
+      projectStatus.textContent = "仅支持 PNG、JPG、WEBP、GIF 或 PDF，文件请小于 8MB。";
+      return;
+    }
+
+    saveProject.disabled = true;
+    projectStatus.textContent = "正在发布作品…";
+    const previousFilePath = selectedProject?.file_path || null;
+    let filePath = previousFilePath;
+    let fileName = selectedProject?.file_name || null;
+    if (file) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      filePath = `${activeUser.id}/works/${Date.now()}-${safeName}`;
+      fileName = file.name;
+      const { error: uploadError } = await client.storage
+        .from("site-project-files")
+        .upload(filePath, file, { cacheControl: "3600", contentType: file.type });
+      if (uploadError) {
+        saveProject.disabled = false;
+        projectStatus.textContent = `上传失败：${uploadError.message}`;
+        return;
+      }
+    }
+
+    const details = { title, summary, project_url: externalUrl, file_path: filePath, file_name: fileName };
+    const request = selectedProject
+      ? client.from("site_projects").update(details).eq("id", selectedProject.id).eq("owner_id", activeUser.id)
+      : client.from("site_projects").insert([{ ...details, owner_id: activeUser.id }]);
+    const { error } = await request;
+    saveProject.disabled = false;
+    if (error) {
+      if (file && filePath) await client.storage.from("site-project-files").remove([filePath]);
+      projectStatus.textContent = error.code === "42P01"
+        ? "作品功能尚未配置，请先执行 supabase/site-projects.sql。"
+        : `发布失败：${error.message}`;
+      return;
+    }
+    if (file && previousFilePath && previousFilePath !== filePath) {
+      await client.storage.from("site-project-files").remove([previousFilePath]);
+    }
+    resetProjectEditor();
+    await fetchProjects();
+    projectStatus.textContent = "作品已发布，项目页刷新后即可看到。";
+  });
+
+  const deleteProject = async (id) => {
+    const project = projects.find((item) => item.id === id);
+    if (!project || !activeUser) return;
+    if (!window.confirm(`确定删除作品“${project.title}”吗？删除后无法恢复。`)) return;
+    projectStatus.textContent = "正在删除作品…";
+    const { error } = await client
+      .from("site_projects")
+      .delete()
+      .eq("id", project.id)
+      .eq("owner_id", activeUser.id);
+    if (error) {
+      projectStatus.textContent = `删除失败：${error.message}`;
+      return;
+    }
+    if (project.file_path) await client.storage.from("site-project-files").remove([project.file_path]);
+    if (selectedProject?.id === project.id) resetProjectEditor();
+    await fetchProjects();
+    projectStatus.textContent = "作品已删除。";
+  };
+
+  projectList.addEventListener("click", (event) => {
+    const edit = event.target.closest("[data-admin-edit-project]");
+    const remove = event.target.closest("[data-admin-delete-project]");
+    if (edit) editProject(edit.dataset.adminEditProject);
+    if (remove) void deleteProject(remove.dataset.adminDeleteProject);
+  });
+  newProject.addEventListener("click", resetProjectEditor);
+  deleteProjectButton.addEventListener("click", () => void deleteProject(selectedProject?.id));
 
   const applyMusic = (music) => {
     currentMusic = music || null;

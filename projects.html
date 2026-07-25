@@ -32,9 +32,17 @@
 
           <article class="case-study reveal" id="notes"><div class="case-number">03</div><div class="case-body"><p class="case-label">LEARNING / LOGBOOK</p><h2>学习与工作日志</h2><p class="case-lead">把每日学习、工作和训练的片段落到日历里；内容不必完美，但每一次更新都会成为下一次迭代的证据。</p><div class="case-facts"><div><span>入口</span><strong>日历打卡、古诗提示、可补写历史日期与私有后台管理</strong></div><div><span>数据</span><strong>浏览器本地暂存与 Supabase 云端同步并存</strong></div><div><span>原则</span><strong>真实记录过程，用可复盘的积累替代空泛的自我描述</strong></div></div><a class="text-link" href="records.html">打开学习记录 <span aria-hidden="true">→</span></a></div><div class="case-art case-art-notes" aria-hidden="true"><span>SHIP</span><span>LEARN</span><span>REPEAT</span></div></article>
         </section>
+
+        <section class="published-projects reveal" data-public-projects-section hidden aria-labelledby="published-projects-title">
+          <div class="published-projects-heading"><div><p class="section-kicker">FROM THE ADMIN DESK</p><h2 id="published-projects-title">新近发布的作品</h2></div><p>这些内容由站长从后台持续更新。</p></div>
+          <div class="published-project-grid" data-public-project-list></div>
+        </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>ONE PROJECT AT A TIME.</span><a href="contact.html">SAY HELLO →</a></footer>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
+    <script src="site-projects.js"></script>
   </body>
 </html>

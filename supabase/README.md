@@ -1,12 +1,16 @@
-# Supabase 云端打卡设置
+# Supabase 设置说明
 
-1. 在 Supabase 创建一个新项目。
-2. 打开 **SQL Editor**，执行同目录的 `schema.sql`。
+1. 在 Supabase Dashboard 的 **SQL Editor** 依次执行：
+   - `schema.sql`：学习/工作打卡表；
+   - `admin-access.sql`：将你已登录的网站账户设为唯一后台管理员；
+   - `site-music.sql`：后台上传全站音乐（需要时执行）；
+   - `site-projects.sql`：后台发布图片、PDF 或链接作品（需要时执行）。
+2. 执行 `admin-access.sql` 时，只在 Supabase SQL Editor 中把占位邮箱替换为自己的登录邮箱。不要把邮箱写回网站代码或提交到 GitHub。
 3. 在 **Authentication > URL Configuration** 中设置：
-   - Site URL：你的 GitHub Pages 首页，例如 `https://用户名.github.io/仓库名/`
+   - Site URL：`https://用户名.github.io/仓库名/`
    - Redirect URLs：加入 `https://用户名.github.io/仓库名/records.html`
-4. 在 **Connect / API Keys** 复制 Project URL 和 **Publishable key**（或旧版 anon key）。不要复制 secret / service_role key。
-5. 填入 `../supabase-config.js` 的 `url` 与 `publishableKey` 后提交到 GitHub。
-6. 部署后，打开“记录”页面，输入自己的邮箱并点击邮件中的登录链接。登录成功后，数据会同步到云端。
+4. 在 **Authentication > Providers > Email** 关闭新用户注册，只保留你已有的账户。
+5. 在 **Connect / API Keys** 复制 Project URL 和 **Publishable key** 到 `../supabase-config.js`。绝不使用或提交 `secret` / `service_role` key。
+6. 首次设置密码或忘记密码时，在“记录”或“后台”页输入自己的邮箱，点击“忘记密码”，再通过邮件设置密码；之后可直接使用邮箱和密码登录。
 
-`schema.sql` 的 RLS 规则确保：登录用户只能读取和修改自己 `user_id` 下的记录。即使公开密钥被看到，也无法越权读取其他用户的数据。
+`admin-access.sql` 和各功能脚本都使用 RLS：只有站长账号可读写私有打卡、上传音乐或发布作品。作品图片/PDF 被标为公开，是为了让访客能在项目页查看你主动发布的内容。

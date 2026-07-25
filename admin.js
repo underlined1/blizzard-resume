@@ -5,6 +5,7 @@
   const loginEmail = document.querySelector("[data-admin-login-email]");
   const loginPassword = document.querySelector("[data-admin-login-password]");
   const loginButton = document.querySelector("[data-admin-login-button]");
+  const passwordRecoveryButton = document.querySelector("[data-admin-password-recovery]");
   const dashboard = document.querySelector("[data-admin-dashboard]");
   const status = document.querySelector("[data-admin-status]");
   const adminUser = document.querySelector("[data-admin-user]");
@@ -46,6 +47,7 @@
   let selectedRecordId = null;
   let currentMusic = null;
   let sessionVersion = 0;
+  let passwordRecoveryActive = false;
 
   const hasAdminAccess = async () => {
     const { data, error } = await client.rpc("is_site_admin");
@@ -187,6 +189,7 @@
     const version = ++sessionVersion;
     const user = session?.user;
     if (!user) {
+      passwordRecoveryActive = false;
       setDashboard(null);
       return;
     }
@@ -204,6 +207,12 @@
 
     setDashboard(user);
     resetEditor();
+    if (passwordRecoveryActive) {
+      passwordForm.hidden = false;
+      setPasswordButton?.setAttribute("aria-expanded", "true");
+      status.textContent = "请设置新密码。密码和确认密码都会以隐藏字符显示。";
+      newPassword.focus();
+    }
     void fetchRecords();
     void fetchMusic();
   };
@@ -223,6 +232,23 @@
       : "登录成功，正在进入管理后台。";
   });
 
+  passwordRecoveryButton?.addEventListener("click", async () => {
+    const email = loginEmail.value.trim();
+    if (!email) {
+      loginStatus.textContent = "请先输入登录邮箱，再点击忘记密码。";
+      loginEmail.focus();
+      return;
+    }
+    passwordRecoveryButton.disabled = true;
+    loginStatus.textContent = "正在发送密码设置邮件…";
+    const redirectTo = new URL("records.html", window.location.href).href;
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+    passwordRecoveryButton.disabled = false;
+    loginStatus.textContent = error
+      ? `发送失败：${error.message}`
+      : "如该邮箱已注册，密码设置邮件已发送。打开邮件后可设置新密码。";
+  });
+
   setPasswordButton.addEventListener("click", () => {
     if (!activeUser) return;
     const willShow = passwordForm.hidden;
@@ -237,6 +263,7 @@
   cancelPassword.addEventListener("click", () => {
     passwordForm.hidden = true;
     passwordForm.reset();
+    passwordRecoveryActive = false;
     setPasswordButton.setAttribute("aria-expanded", "false");
     status.textContent = "已取消设置密码。";
   });
@@ -257,6 +284,7 @@
       status.textContent = `设置密码失败：${error.message}`;
       return;
     }
+    passwordRecoveryActive = false;
     passwordForm.hidden = true;
     passwordForm.reset();
     setPasswordButton.setAttribute("aria-expanded", "false");
@@ -372,7 +400,10 @@
     loginStatus.textContent = error ? `退出失败：${error.message}` : "已退出管理后台。";
   });
 
-  client.auth.onAuthStateChange((_event, session) => void activateSession(session));
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") passwordRecoveryActive = true;
+    void activateSession(session);
+  });
 
   client.auth.getSession().then(({ data }) => {
     void activateSession(data.session);

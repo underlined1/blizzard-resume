@@ -68,6 +68,7 @@
   const client = window.supabase.createClient(config.url, config.publishableKey);
   let activeUser = null;
   let syncing = false;
+  let passwordRecoveryActive = false;
 
   const readLocalRecords = () => {
     try {
@@ -161,11 +162,18 @@
     activeUser = session?.user || null;
     showAccount(activeUser);
     if (!activeUser) {
+      passwordRecoveryActive = false;
       setEditingAccess(false);
       status.textContent = "请用自己的邮箱和密码登录后，再查看和编辑云端学习记录。";
       return;
     }
     await syncInitialRecords();
+    if (passwordRecoveryActive) {
+      passwordForm.hidden = false;
+      setPasswordButton?.setAttribute("aria-expanded", "true");
+      status.textContent = "请设置新密码。密码和确认密码都会以隐藏字符显示。";
+      newPassword?.focus();
+    }
   };
 
   const syncOneRecord = async ({ date, record }) => {
@@ -216,6 +224,7 @@
   cancelPassword?.addEventListener("click", () => {
     passwordForm.hidden = true;
     passwordForm.reset();
+    passwordRecoveryActive = false;
     setPasswordButton?.setAttribute("aria-expanded", "false");
     status.textContent = "已取消设置密码。";
   });
@@ -236,6 +245,7 @@
       status.textContent = `设置密码失败：${error.message}`;
       return;
     }
+    passwordRecoveryActive = false;
     passwordForm.hidden = true;
     passwordForm.reset();
     setPasswordButton?.setAttribute("aria-expanded", "false");
@@ -295,7 +305,8 @@
     status.textContent = error ? `退出失败：${error.message}` : "已退出云端账户。";
   });
 
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") passwordRecoveryActive = true;
     void handleSession(session);
   });
 

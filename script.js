@@ -27,19 +27,32 @@ if (liveClock && liveDate) {
   window.setInterval(renderClock, 1000);
 }
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (!entry.isIntersecting) return;
-    entry.target.classList.add("is-visible");
-    observer.unobserve(entry.target);
+const revealItems = document.querySelectorAll(".reveal");
+const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+if (!("IntersectionObserver" in window) || prefersReducedMotion) {
+  revealItems.forEach((item) => item.classList.add("is-visible"));
+} else {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12 });
+
+  revealItems.forEach((item) => observer.observe(item));
+}
+
+document.querySelectorAll(".mobile-menu").forEach((menu) => {
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => menu.removeAttribute("open"));
   });
-}, { threshold: 0.12 });
-
-document.querySelectorAll(".reveal").forEach((item) => observer.observe(item));
-
-document.querySelectorAll(".mobile-menu a").forEach((link) => {
-  link.addEventListener("click", () => {
-    link.closest("details").removeAttribute("open");
+  menu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      menu.removeAttribute("open");
+      menu.querySelector("summary")?.focus();
+    }
   });
 });
 

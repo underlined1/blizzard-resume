@@ -69,6 +69,7 @@
   const client = window.supabase.createClient(config.url, config.publishableKey);
   let activeUser = null;
   let syncing = false;
+  let syncQueue = Promise.resolve();
   let passwordRecoveryActive = false;
 
   const readLocalRecords = () => {
@@ -193,7 +194,20 @@
   };
 
   window.addEventListener("blizzard:checkin-change", (event) => {
-    void syncOneRecord(event.detail);
+    // 连续点击保存/打卡时按顺序写入，避免较早的请求覆盖最新内容。
+    syncQueue = syncQueue
+      .catch(() => undefined)
+      .then(() => syncOneRecord(event.detail));
+  });
+
+  window.addEventListener("offline", () => {
+    if (activeUser) status.textContent = "当前网络已断开；记录仍会保存在本机，恢复网络后会再次同步。";
+  });
+
+  window.addEventListener("online", () => {
+    if (!activeUser) return;
+    status.textContent = "网络已恢复，正在检查云端记录…";
+    void syncInitialRecords();
   });
 
   loginForm?.addEventListener("submit", async (event) => {

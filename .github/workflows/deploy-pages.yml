@@ -11,12 +11,15 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
-  cancel-in-progress: true
+  # Pages 同一时间只能创建一个部署。新提交排队，避免取消中的旧部署
+  # 尚未释放时与新部署互相冲突。
+  group: pages-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

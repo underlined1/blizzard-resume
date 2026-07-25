@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="site-page page-records">
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
     <div class="noise" aria-hidden="true"></div>
     <div class="page-shell">
       <header class="site-header">
@@ -21,7 +22,7 @@
         <details class="mobile-menu"><summary aria-label="打开导航">菜单</summary><nav aria-label="移动端导航"><a href="index.html">首页</a><a href="projects.html">项目</a><a href="records.html" aria-current="page">记录</a><a href="about.html">关于</a><a href="contact.html">联系我</a></nav></details>
       </header>
 
-      <main class="page-main records-main">
+      <main id="main-content" class="page-main records-main">
         <section class="page-intro reveal" aria-labelledby="records-title"><p class="section-kicker">03 / STUDY &amp; WORK LOG</p><h1 id="records-title">把每一天，<br /><em>记成可回望的片段。</em></h1><p>这是属于自己的学习与工作地图。登录后，打卡和笔记会安全同步到云端；换设备时，也能继续写下去。</p></section>
 
         <section class="poetry-banner reveal" aria-labelledby="poem-title">
@@ -93,7 +94,7 @@
               <p class="daily-status" data-daily-status aria-live="polite">每天的积累，都会留在这张日历上。</p>
             </aside>
           </div>
-          <p class="record-footnote">登录后，打卡和文字记录会加密传输并保存至你的 Supabase 数据库；未登录时，内容只暂存于当前浏览器。</p>
+          <p class="record-footnote">登录后，打卡和文字记录会通过加密连接保存至你的 Supabase 数据库；未登录时，内容只保存在当前浏览器，不会上传。</p>
         </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>WRITE IT DOWN.</span><a href="index.html">BACK HOME →</a></footer>

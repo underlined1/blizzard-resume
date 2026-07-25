@@ -9,12 +9,24 @@ create table if not exists public.site_projects (
   owner_id uuid not null references auth.users(id) on delete cascade,
   title text not null check (char_length(title) between 1 and 100),
   summary text not null default '' check (char_length(summary) <= 500),
-  project_url text,
+  project_url text check (project_url is null or project_url ~ '^https?://'),
   file_path text,
-  file_name text,
+  file_name text check (file_name is null or char_length(file_name) <= 255),
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.site_projects
+  drop constraint if exists site_projects_project_url_check;
+alter table public.site_projects
+  add constraint site_projects_project_url_check
+  check (project_url is null or project_url ~ '^https?://');
+
+alter table public.site_projects
+  drop constraint if exists site_projects_file_name_check;
+alter table public.site_projects
+  add constraint site_projects_file_name_check
+  check (file_name is null or char_length(file_name) <= 255);
 
 create index if not exists site_projects_created_at_index
   on public.site_projects (created_at desc);

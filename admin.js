@@ -43,6 +43,13 @@
   const projectStatus = document.querySelector("[data-admin-project-status]");
   const projectList = document.querySelector("[data-admin-project-list]");
   const projectCount = document.querySelector("[data-admin-project-count]");
+  const interestForm = document.querySelector("[data-admin-interest-form]");
+  const interestKey = document.querySelector("[data-admin-interest-key]");
+  const interestTitle = document.querySelector("[data-admin-interest-title-input]");
+  const interestDescription = document.querySelector("[data-admin-interest-description]");
+  const interestHighlight = document.querySelector("[data-admin-interest-highlight]");
+  const saveInterest = document.querySelector("[data-admin-save-interest]");
+  const interestStatus = document.querySelector("[data-admin-interest-status]");
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -60,6 +67,7 @@
   let currentMusic = null;
   let projects = [];
   let selectedProject = null;
+  let interests = new Map();
   let sessionVersion = 0;
   let passwordRecoveryActive = false;
 
@@ -93,6 +101,18 @@
 
   const projectFileUrl = (path) => client.storage.from("site-project-files").getPublicUrl(path).data.publicUrl;
   const projectMimeTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]);
+  const defaultInterests = {
+    music: {
+      title: "音乐",
+      description: "给此刻选一首歌，让页面也有自己的节奏。它不需要很响，却能陪着一次次专注、行走与重新出发。",
+      highlight: "把耳机戴上，也把世界稍微调低一点。"
+    },
+    reading: {
+      title: "阅读",
+      description: "把好奇心放进书页，慢慢认识更大的世界。读完不必急着下结论，重要的是留下自己的问题。",
+      highlight: "愿每一次翻页，都带来一小块新的地图。"
+    }
+  };
 
   const setDashboard = (user) => {
     activeUser = user || null;
@@ -302,6 +322,28 @@
     projectName.focus();
   };
 
+  const renderInterestForm = (key) => {
+    const interest = interests.get(key) || defaultInterests[key];
+    interestKey.value = key;
+    interestTitle.value = interest.title;
+    interestDescription.value = interest.description;
+    interestHighlight.value = interest.highlight || "";
+  };
+
+  const fetchInterests = async () => {
+    if (!activeUser) return;
+    const { data, error } = await client
+      .from("site_interest_profiles")
+      .select("section_key, owner_id, title, description, highlight");
+    if (error) {
+      interestStatus.textContent = "兴趣介绍功能尚未配置，请先执行 supabase/site-interests.sql。";
+      return;
+    }
+    interests = new Map((data || []).map((interest) => [interest.section_key, interest]));
+    renderInterestForm(interestKey.value || "music");
+    interestStatus.textContent = "已加载关于页的音乐与阅读介绍。";
+  };
+
   const fetchRecords = async () => {
     if (!activeUser) return;
     status.textContent = "正在读取你的云端记录…";
@@ -369,6 +411,7 @@
     void fetchRecords();
     void fetchMusic();
     void fetchProjects();
+    void fetchInterests();
   };
 
   loginForm.addEventListener("submit", async (event) => {
@@ -573,6 +616,35 @@
   });
   newProject.addEventListener("click", resetProjectEditor);
   deleteProjectButton.addEventListener("click", () => void deleteProject(selectedProject?.id));
+
+  interestKey.addEventListener("change", () => renderInterestForm(interestKey.value));
+  interestForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!activeUser) return;
+    const sectionKey = interestKey.value;
+    const title = interestTitle.value.trim();
+    const description = interestDescription.value.trim();
+    const highlight = interestHighlight.value.trim();
+    if (!title || !description) return;
+    saveInterest.disabled = true;
+    interestStatus.textContent = "正在保存介绍…";
+    const { error } = await client.from("site_interest_profiles").upsert([{
+      section_key: sectionKey,
+      owner_id: activeUser.id,
+      title,
+      description,
+      highlight
+    }], { onConflict: "section_key" });
+    saveInterest.disabled = false;
+    if (error) {
+      interestStatus.textContent = error.code === "42P01"
+        ? "兴趣介绍功能尚未配置，请先执行 supabase/site-interests.sql。"
+        : `保存失败：${error.message}`;
+      return;
+    }
+    interests.set(sectionKey, { section_key: sectionKey, owner_id: activeUser.id, title, description, highlight });
+    interestStatus.textContent = "已保存；关于页刷新后会显示新内容。";
+  });
 
   const applyMusic = (music) => {
     currentMusic = music || null;

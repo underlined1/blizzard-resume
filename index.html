@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#102633" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; img-src 'self' data: https://vjhwcidwjriipocmxzsi.supabase.co; media-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; frame-src 'none'; upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()" />
     <meta name="description" content="暴风雪的个人网站：作品、爱好、学习与工作记录。" />
     <title>暴风雪 · 个人网站</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -72,8 +75,8 @@
             <div class="section-heading reveal"><p class="section-kicker">THINGS I LOVE</p><div class="heading-line"><h2 id="hobbies-title">我的爱好，<br /><em>是生活的留白。</em></h2><p>这里可以随着时间替换成真正喜欢的事：一首反复听的歌、一本读完的书、一段出发的旅程。</p></div></div>
             <div class="hobby-grid">
               <article class="hobby-card hobby-poetry reveal"><span>01 / POETRY</span><b>诗词</b><p>在古人的字句里，借一点清醒和辽阔。</p><i aria-hidden="true">「明月松间照」</i></article>
-              <article class="hobby-card hobby-music reveal delay-1"><span>02 / MUSIC</span><b>音乐</b><p>给此刻选一首歌，让页面也有自己的节奏。</p><i aria-hidden="true">♫</i></article>
-              <article class="hobby-card hobby-reading reveal delay-2"><span>03 / READING</span><b>阅读</b><p>把好奇心放进书页，慢慢认识更大的世界。</p><i aria-hidden="true">↗</i></article>
+              <a class="hobby-card hobby-link hobby-music reveal delay-1" href="about.html#music"><span>02 / MUSIC</span><b>音乐</b><p>给此刻选一首歌，让页面也有自己的节奏。</p><small>点击了解更多 →</small><i aria-hidden="true">♫</i></a>
+              <a class="hobby-card hobby-link hobby-reading reveal delay-2" href="about.html#reading"><span>03 / READING</span><b>阅读</b><p>把好奇心放进书页，慢慢认识更大的世界。</p><small>点击了解更多 →</small><i aria-hidden="true">↗</i></a>
               <article class="hobby-card hobby-fitness reveal delay-3"><span>04 / FITNESS</span><b>健身</b><p>在一次次训练里，积蓄更稳定、更有力量的自己。</p><i aria-hidden="true">✦</i></article>
             </div>
           </div>
@@ -97,6 +100,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="security.js"></script>
     <script src="script.js"></script>
     <script src="public-music.js"></script>
   </body>

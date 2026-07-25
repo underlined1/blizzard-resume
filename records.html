@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#102633" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; img-src 'self' data: https://vjhwcidwjriipocmxzsi.supabase.co; media-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; frame-src 'none'; upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()" />
     <meta name="description" content="暴风雪的学习与工作记录。" />
     <title>学习记录 · 暴风雪</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -101,6 +104,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="security.js"></script>
+    <script src="poem-library.js"></script>
     <script src="script.js"></script>
     <script src="cloud-sync.js"></script>
   </body>

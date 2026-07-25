@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101219" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; img-src 'self' data: https://vjhwcidwjriipocmxzsi.supabase.co; media-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; frame-src 'none'; upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()" />
     <meta name="description" content="暴风雪的项目档案。" />
     <title>项目 · 暴风雪</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,6 +28,11 @@
       <main id="main-content" class="page-main">
         <section class="page-intro reveal" aria-labelledby="projects-title"><p class="section-kicker">01 / PROJECT ARCHIVE</p><h1 id="projects-title">让作品自己<br /><em>说明问题。</em></h1><p>这里不追求堆砌数量。每个条目都回答三个问题：我做了什么、为什么这样做、下一步会怎么迭代。</p></section>
 
+        <section class="published-projects reveal" data-public-projects-section hidden aria-labelledby="published-projects-title">
+          <div class="published-projects-heading"><div><p class="section-kicker">FROM THE ADMIN DESK</p><h2 id="published-projects-title">新近发布的作品</h2></div><p>后台发布的作品会优先出现在这里，方便访客第一眼看到新的成果。</p></div>
+          <div class="published-project-grid" data-public-project-list></div>
+        </section>
+
         <section class="case-list" aria-label="项目列表">
           <article class="case-study reveal" id="portfolio"><div class="case-number">01</div><div class="case-body"><p class="case-label">LIVE / PERSONAL SITE</p><h2>Blizzard Resume</h2><p class="case-lead">当前正在浏览的个人简历博客：把作品档案、学习日历、私有后台与公开音乐整合成一个持续更新的个人工作台。</p><div class="case-facts"><div><span>目标</span><strong>让来访者快速理解作品、学习方向与持续积累</strong></div><div><span>实现</span><strong>HTML · CSS · JavaScript · Supabase · GitHub Pages</strong></div><div><span>关键点</span><strong>云端打卡、RLS 私有数据、管理员后台与公开音乐发布</strong></div></div><div class="case-actions"><a class="button button-primary" href="index.html">回到首页 <span aria-hidden="true">→</span></a><a class="text-link" href="https://github.com/underlined1" target="_blank" rel="noreferrer">访问 GitHub ↗</a></div></div><div class="case-art case-art-portfolio" aria-hidden="true"><span>❄</span><i></i><i></i><i></i></div></article>
 
@@ -33,15 +41,12 @@
           <article class="case-study reveal" id="notes"><div class="case-number">03</div><div class="case-body"><p class="case-label">LEARNING / LOGBOOK</p><h2>学习与工作日志</h2><p class="case-lead">把每日学习、工作和训练的片段落到日历里；内容不必完美，但每一次更新都会成为下一次迭代的证据。</p><div class="case-facts"><div><span>入口</span><strong>日历打卡、古诗提示、可补写历史日期与私有后台管理</strong></div><div><span>数据</span><strong>浏览器本地暂存与 Supabase 云端同步并存</strong></div><div><span>原则</span><strong>真实记录过程，用可复盘的积累替代空泛的自我描述</strong></div></div><a class="text-link" href="records.html">打开学习记录 <span aria-hidden="true">→</span></a></div><div class="case-art case-art-notes" aria-hidden="true"><span>SHIP</span><span>LEARN</span><span>REPEAT</span></div></article>
         </section>
 
-        <section class="published-projects reveal" data-public-projects-section hidden aria-labelledby="published-projects-title">
-          <div class="published-projects-heading"><div><p class="section-kicker">FROM THE ADMIN DESK</p><h2 id="published-projects-title">新近发布的作品</h2></div><p>这些内容由站长从后台持续更新。</p></div>
-          <div class="published-project-grid" data-public-project-list></div>
-        </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>ONE PROJECT AT A TIME.</span><a href="contact.html">SAY HELLO →</a></footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="security.js"></script>
     <script src="script.js"></script>
     <script src="site-projects.js"></script>
   </body>

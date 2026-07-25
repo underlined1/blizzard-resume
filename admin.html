@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#102633" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; img-src 'self' data: https://vjhwcidwjriipocmxzsi.supabase.co; media-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; frame-src 'none'; upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()" />
     <meta name="description" content="暴风雪个人简历网站的学习打卡管理后台。" />
     <title>管理后台 · 暴风雪</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -102,12 +105,29 @@
             <p class="admin-project-status" data-admin-project-status aria-live="polite">正在读取已发布的作品…</p>
             <div class="admin-project-list" data-admin-project-list aria-live="polite"></div>
           </section>
+
+          <section class="admin-interest-card" aria-labelledby="admin-interest-title">
+            <div class="admin-project-heading"><div><p class="section-kicker">ABOUT PAGE CONTENT</p><h3 id="admin-interest-title">设置音乐与阅读介绍</h3><p>首页点击“音乐”或“阅读”后会进入关于页；在这里修改两张介绍卡片的标题、正文和一句话。</p></div></div>
+            <form class="admin-interest-form" data-admin-interest-form>
+              <label class="sr-only" for="admin-interest-key">内容板块</label>
+              <select id="admin-interest-key" data-admin-interest-key><option value="music">音乐介绍</option><option value="reading">阅读介绍</option></select>
+              <label class="sr-only" for="admin-interest-title-input">标题</label>
+              <input id="admin-interest-title-input" data-admin-interest-title-input type="text" maxlength="80" placeholder="标题" required />
+              <label class="sr-only" for="admin-interest-description">介绍正文</label>
+              <textarea id="admin-interest-description" data-admin-interest-description rows="5" maxlength="1000" placeholder="写下你想在关于页展示的介绍。" required></textarea>
+              <label class="sr-only" for="admin-interest-highlight">一句话</label>
+              <input id="admin-interest-highlight" data-admin-interest-highlight type="text" maxlength="160" placeholder="一句话 / 推荐语（可选）" />
+              <div class="admin-project-actions"><button class="button button-primary" type="submit" data-admin-save-interest>保存介绍</button></div>
+            </form>
+            <p class="admin-project-status" data-admin-interest-status aria-live="polite">正在读取兴趣介绍…</p>
+          </section>
         </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>PRIVATE LOGBOOK.</span><a href="records.html">VIEW CALENDAR ↗</a></footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="security.js"></script>
     <script src="script.js"></script>
     <script src="admin.js"></script>
   </body>

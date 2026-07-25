@@ -256,12 +256,15 @@ const poemSource = document.querySelector("[data-poem-source]");
 const poemButton = document.querySelector("[data-shuffle-poem]");
 
 if (poemText && poemSource && poemButton) {
-  const poems = [
+  const fallbackPoems = [
     ["长风破浪会有时，直挂云帆济沧海。", "李白《行路难》"],
     ["山重水复疑无路，柳暗花明又一村。", "陆游《游山西村》"],
     ["不经一番寒彻骨，怎得梅花扑鼻香。", "黄檗《上堂开示颂》"],
     ["会当凌绝顶，一览众山小。", "杜甫《望岳》"]
   ];
+  const poems = Array.isArray(window.BLIZZARD_POEMS) && window.BLIZZARD_POEMS.length >= 50
+    ? window.BLIZZARD_POEMS
+    : fallbackPoems;
   let poemIndex = 0;
 
   poemButton.addEventListener("click", () => {

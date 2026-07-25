@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101219" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; img-src 'self' data: https://vjhwcidwjriipocmxzsi.supabase.co; media-src 'self' https://vjhwcidwjriipocmxzsi.supabase.co; frame-src 'none'; upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()" />
     <meta name="description" content="关于暴风雪。" />
     <title>关于 · 暴风雪</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,10 +33,22 @@
           <aside class="about-card reveal delay-1"><span class="about-card-mark">❄</span><p>目前状态</p><h2>在风雪里慢慢构建</h2><div><span>网站</span><b>GitHub Pages · Supabase</b></div><div><span>关注</span><b>Python 后端 · 前端体验 · 数据产品</b></div><div><span>下一步</span><b>完成 FitFlow 独立部署</b></div></aside>
         </section>
 
+        <section class="interest-section reveal" aria-labelledby="interests-title">
+          <div class="section-heading"><p class="section-kicker">MUSIC &amp; READING</p><div class="heading-line"><h2 id="interests-title">把喜欢的事，<br /><em>写成自己的注脚。</em></h2><p>首页的音乐和阅读卡片会来到这里；内容可由站长在后台随时更新。</p></div></div>
+          <div class="interest-grid">
+            <article id="music" class="interest-card interest-music"><p class="section-kicker">02 / MUSIC</p><h3 data-interest-title="music">音乐</h3><p data-interest-description="music">给此刻选一首歌，让页面也有自己的节奏。它不需要很响，却能陪着一次次专注、行走与重新出发。</p><blockquote data-interest-highlight="music">把耳机戴上，也把世界稍微调低一点。</blockquote></article>
+            <article id="reading" class="interest-card interest-reading"><p class="section-kicker">03 / READING</p><h3 data-interest-title="reading">阅读</h3><p data-interest-description="reading">把好奇心放进书页，慢慢认识更大的世界。读完不必急着下结论，重要的是留下自己的问题。</p><blockquote data-interest-highlight="reading">愿每一次翻页，都带来一小块新的地图。</blockquote></article>
+          </div>
+        </section>
+
         <section class="timeline-section reveal" aria-labelledby="timeline-title"><div class="section-heading"><p class="section-kicker">THE TIMELINE</p><h2 id="timeline-title">从这里开始，<br /><em>给自己留下一条轨迹。</em></h2></div><ol class="personal-timeline"><li><span>NOW</span><div><h3>个人简历博客上线</h3><p>将项目档案、云端学习日历、私有后台和公开音乐整合成可持续更新的网站。</p></div></li><li><span>NEXT</span><div><h3>部署 FitFlow</h3><p>把本地的 React 与 FastAPI 系统部署为独立站点，并补充可访问的 Demo。</p></div></li><li><span>LATER</span><div><h3>把过程写成案例</h3><p>持续补充截图、架构取舍、问题复盘与迭代结果，让每个项目都能被清楚讲述。</p></div></li></ol></section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>BUILD IN PUBLIC.</span><a href="projects.html">VIEW PROJECTS →</a></footer>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="security.js"></script>
     <script src="script.js"></script>
+    <script src="interests.js"></script>
   </body>
 </html>

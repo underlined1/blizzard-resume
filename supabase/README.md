@@ -6,6 +6,7 @@
    - `site-music.sql`：后台上传全站音乐（需要时执行）；
    - `site-projects.sql`：后台发布图片、PDF 或链接作品（需要时执行）。
    - `site-interests.sql`：后台设置“关于”页的音乐、阅读介绍（需要时执行）。
+   - `site-collections.sql`：后台维护音乐档案、专辑封面与阅读书架（需要时执行）。
 2. 执行 `admin-access.sql` 时，只在 Supabase SQL Editor 中把占位邮箱替换为自己的登录邮箱。不要把邮箱写回网站代码或提交到 GitHub。
 3. 在 **Authentication > URL Configuration** 中设置：
    - Site URL：`https://用户名.github.io/仓库名/`

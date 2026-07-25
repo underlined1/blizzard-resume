@@ -39,6 +39,14 @@
             <article id="music" class="interest-card interest-music"><p class="section-kicker">02 / MUSIC</p><h3 data-interest-title="music">音乐</h3><p data-interest-description="music">给此刻选一首歌，让页面也有自己的节奏。它不需要很响，却能陪着一次次专注、行走与重新出发。</p><blockquote data-interest-highlight="music">把耳机戴上，也把世界稍微调低一点。</blockquote></article>
             <article id="reading" class="interest-card interest-reading"><p class="section-kicker">03 / READING</p><h3 data-interest-title="reading">阅读</h3><p data-interest-description="reading">把好奇心放进书页，慢慢认识更大的世界。读完不必急着下结论，重要的是留下自己的问题。</p><blockquote data-interest-highlight="reading">愿每一次翻页，都带来一小块新的地图。</blockquote></article>
           </div>
+
+          <section class="collection-showcase" data-collection-showcase hidden aria-labelledby="collection-title">
+            <div class="collection-showcase-heading"><div><p class="section-kicker">PERSONAL ARCHIVE</p><h2 id="collection-title">正在反复喜欢的，<br /><em>都留下一点证据。</em></h2></div><p>这些唱片、书和句子都由站长从后台亲自整理。</p></div>
+            <div class="collection-columns">
+              <section class="collection-column collection-column-music" data-collection-column="music" hidden aria-labelledby="music-archive-title"><div class="collection-column-heading"><p class="section-kicker">LISTENING LOG</p><h3 id="music-archive-title">音乐档案</h3></div><div class="collection-list" data-collection-list="music"></div></section>
+              <section class="collection-column collection-column-reading" data-collection-column="reading" hidden aria-labelledby="reading-archive-title"><div class="collection-column-heading"><p class="section-kicker">READING SHELF</p><h3 id="reading-archive-title">阅读书架</h3></div><div class="collection-list" data-collection-list="reading"></div></section>
+            </div>
+          </section>
         </section>
 
         <section class="timeline-section reveal" aria-labelledby="timeline-title"><div class="section-heading"><p class="section-kicker">THE TIMELINE</p><h2 id="timeline-title">从这里开始，<br /><em>给自己留下一条轨迹。</em></h2></div><ol class="personal-timeline"><li><span>NOW</span><div><h3>个人简历博客上线</h3><p>将项目档案、云端学习日历、私有后台和公开音乐整合成可持续更新的网站。</p></div></li><li><span>NEXT</span><div><h3>部署 FitFlow</h3><p>把本地的 React 与 FastAPI 系统部署为独立站点，并补充可访问的 Demo。</p></div></li><li><span>LATER</span><div><h3>把过程写成案例</h3><p>持续补充截图、架构取舍、问题复盘与迭代结果，让每个项目都能被清楚讲述。</p></div></li></ol></section>
@@ -50,5 +58,6 @@
     <script src="security.js"></script>
     <script src="script.js"></script>
     <script src="interests.js"></script>
+    <script src="collections.js"></script>
   </body>
 </html>

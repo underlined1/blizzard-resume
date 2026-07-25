@@ -50,6 +50,22 @@
   const interestHighlight = document.querySelector("[data-admin-interest-highlight]");
   const saveInterest = document.querySelector("[data-admin-save-interest]");
   const interestStatus = document.querySelector("[data-admin-interest-status]");
+  const collectionForm = document.querySelector("[data-admin-collection-form]");
+  const collectionType = document.querySelector("[data-admin-collection-type]");
+  const collectionTitle = document.querySelector("[data-admin-collection-title-input]");
+  const collectionCreator = document.querySelector("[data-admin-collection-creator]");
+  const collectionCategory = document.querySelector("[data-admin-collection-category]");
+  const collectionLink = document.querySelector("[data-admin-collection-link]");
+  const collectionNote = document.querySelector("[data-admin-collection-note]");
+  const collectionQuote = document.querySelector("[data-admin-collection-quote]");
+  const collectionCover = document.querySelector("[data-admin-collection-cover]");
+  const collectionCurrentCover = document.querySelector("[data-admin-collection-current-cover]");
+  const saveCollection = document.querySelector("[data-admin-save-collection]");
+  const newCollection = document.querySelector("[data-admin-new-collection]");
+  const deleteCollectionButton = document.querySelector("[data-admin-delete-collection]");
+  const collectionStatus = document.querySelector("[data-admin-collection-status]");
+  const collectionList = document.querySelector("[data-admin-collection-list]");
+  const collectionCount = document.querySelector("[data-admin-collection-count]");
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -68,6 +84,8 @@
   let projects = [];
   let selectedProject = null;
   let interests = new Map();
+  let collections = [];
+  let selectedCollection = null;
   let sessionVersion = 0;
   let passwordRecoveryActive = false;
 
@@ -101,6 +119,7 @@
 
   const projectFileUrl = (path) => client.storage.from("site-project-files").getPublicUrl(path).data.publicUrl;
   const projectMimeTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]);
+  const collectionCoverMimeTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
   const defaultInterests = {
     music: {
       title: "音乐",
@@ -344,6 +363,119 @@
     interestStatus.textContent = "已加载关于页的音乐与阅读介绍。";
   };
 
+  const collectionCoverUrl = (path) => client.storage.from("site-collection-covers").getPublicUrl(path).data.publicUrl;
+
+  const showCurrentCollectionCover = (entry) => {
+    collectionCurrentCover.replaceChildren();
+    if (!entry?.cover_path) {
+      collectionCurrentCover.hidden = true;
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = collectionCoverUrl(entry.cover_path);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = `当前封面：${entry.cover_name || "打开查看"} ↗`;
+    collectionCurrentCover.append(link);
+    collectionCurrentCover.hidden = false;
+  };
+
+  const resetCollectionEditor = () => {
+    selectedCollection = null;
+    collectionForm.reset();
+    collectionType.value = "music";
+    saveCollection.textContent = "保存到档案";
+    deleteCollectionButton.hidden = true;
+    showCurrentCollectionCover(null);
+  };
+
+  const createCollectionCard = (entry) => {
+    const article = document.createElement("article");
+    article.className = "admin-collection-entry";
+    const top = document.createElement("div");
+    top.className = "admin-entry-card-top";
+    const title = document.createElement("strong");
+    title.textContent = entry.title;
+    const badge = document.createElement("span");
+    badge.className = `admin-entry-badge ${entry.collection_type === "music" ? "is-checked" : ""}`;
+    badge.textContent = entry.collection_type === "music" ? "音乐" : "阅读";
+    top.append(title, badge);
+    article.append(top);
+    const detail = document.createElement("p");
+    detail.textContent = [entry.creator, entry.category].filter(Boolean).join(" · ") || "未添加创作者或类型";
+    article.append(detail);
+    if (entry.note) {
+      const note = document.createElement("p");
+      note.className = "admin-collection-note";
+      note.textContent = entry.note;
+      article.append(note);
+    }
+    const actions = document.createElement("div");
+    actions.className = "admin-entry-card-actions";
+    const edit = document.createElement("button");
+    edit.className = "utility-button";
+    edit.type = "button";
+    edit.dataset.adminEditCollection = entry.id;
+    edit.textContent = "编辑";
+    const remove = document.createElement("button");
+    remove.className = "utility-button";
+    remove.type = "button";
+    remove.dataset.adminDeleteCollection = entry.id;
+    remove.textContent = "删除";
+    actions.append(edit, remove);
+    article.append(actions);
+    return article;
+  };
+
+  const renderCollections = () => {
+    collectionCount.textContent = `${collections.length} 条`;
+    collectionList.replaceChildren();
+    if (!collections.length) {
+      const empty = document.createElement("p");
+      empty.className = "admin-empty-state";
+      empty.textContent = "还没有收藏条目。把正在听或读的第一项放进来吧。";
+      collectionList.append(empty);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    collections.forEach((entry) => fragment.append(createCollectionCard(entry)));
+    collectionList.append(fragment);
+  };
+
+  const fetchCollections = async () => {
+    if (!activeUser) return;
+    const { data, error } = await client
+      .from("site_collections")
+      .select("id, owner_id, collection_type, title, creator, category, note, quote, external_url, cover_path, cover_name, updated_at")
+      .order("updated_at", { ascending: false });
+    if (error) {
+      collectionStatus.textContent = "收藏档案尚未配置，请先执行 supabase/site-collections.sql。";
+      return;
+    }
+    collections = data || [];
+    renderCollections();
+    collectionStatus.textContent = collections.length ? "已加载音乐与阅读档案。" : "从一张喜欢的专辑或一本书开始吧。";
+  };
+
+  const editCollection = (id) => {
+    const entry = collections.find((item) => item.id === id);
+    if (!entry) return;
+    selectedCollection = entry;
+    collectionType.value = entry.collection_type;
+    collectionTitle.value = entry.title;
+    collectionCreator.value = entry.creator || "";
+    collectionCategory.value = entry.category || "";
+    collectionLink.value = entry.external_url || "";
+    collectionNote.value = entry.note || "";
+    collectionQuote.value = entry.quote || "";
+    collectionCover.value = "";
+    saveCollection.textContent = "更新这条档案";
+    deleteCollectionButton.hidden = false;
+    showCurrentCollectionCover(entry);
+    collectionForm.scrollIntoView({ behavior: "smooth", block: "center" });
+    collectionTitle.focus();
+  };
+
   const fetchRecords = async () => {
     if (!activeUser) return;
     status.textContent = "正在读取你的云端记录…";
@@ -412,6 +544,7 @@
     void fetchMusic();
     void fetchProjects();
     void fetchInterests();
+    void fetchCollections();
   };
 
   loginForm.addEventListener("submit", async (event) => {
@@ -645,6 +778,106 @@
     interests.set(sectionKey, { section_key: sectionKey, owner_id: activeUser.id, title, description, highlight });
     interestStatus.textContent = "已保存；关于页刷新后会显示新内容。";
   });
+
+  collectionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!activeUser) return;
+    const title = collectionTitle.value.trim();
+    const creator = collectionCreator.value.trim();
+    const category = collectionCategory.value.trim();
+    const note = collectionNote.value.trim();
+    const quote = collectionQuote.value.trim();
+    const requestedUrl = collectionLink.value.trim();
+    const externalUrl = validExternalUrl(requestedUrl);
+    const file = collectionCover.files?.[0];
+    if (!title) return;
+    if (requestedUrl && !externalUrl) {
+      collectionStatus.textContent = "外部链接需要以 http:// 或 https:// 开头。";
+      collectionLink.focus();
+      return;
+    }
+    if (file && (!collectionCoverMimeTypes.has(file.type) || file.size > 5 * 1024 * 1024)) {
+      collectionStatus.textContent = "封面仅支持 PNG、JPG、WEBP 或 GIF，文件请小于 5MB。";
+      return;
+    }
+    saveCollection.disabled = true;
+    collectionStatus.textContent = "正在保存收藏档案…";
+    const previousCoverPath = selectedCollection?.cover_path || null;
+    let coverPath = previousCoverPath;
+    let coverName = selectedCollection?.cover_name || null;
+    if (file) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      coverPath = `${activeUser.id}/covers/${Date.now()}-${safeName}`;
+      coverName = file.name;
+      const { error: uploadError } = await client.storage
+        .from("site-collection-covers")
+        .upload(coverPath, file, { cacheControl: "3600", contentType: file.type });
+      if (uploadError) {
+        saveCollection.disabled = false;
+        collectionStatus.textContent = `封面上传失败：${uploadError.message}`;
+        return;
+      }
+    }
+
+    const details = {
+      collection_type: collectionType.value,
+      title,
+      creator,
+      category,
+      note,
+      quote,
+      external_url: externalUrl,
+      cover_path: coverPath,
+      cover_name: coverName
+    };
+    const request = selectedCollection
+      ? client.from("site_collections").update(details).eq("id", selectedCollection.id).eq("owner_id", activeUser.id)
+      : client.from("site_collections").insert([{ ...details, owner_id: activeUser.id }]);
+    const { error } = await request;
+    saveCollection.disabled = false;
+    if (error) {
+      if (file && coverPath) await client.storage.from("site-collection-covers").remove([coverPath]);
+      collectionStatus.textContent = error.code === "42P01"
+        ? "收藏档案尚未配置，请先执行 supabase/site-collections.sql。"
+        : `保存失败：${error.message}`;
+      return;
+    }
+    if (file && previousCoverPath && previousCoverPath !== coverPath) {
+      await client.storage.from("site-collection-covers").remove([previousCoverPath]);
+    }
+    resetCollectionEditor();
+    await fetchCollections();
+    collectionStatus.textContent = "已保存，关于页刷新后会显示在你的音乐档案或阅读书架中。";
+  });
+
+  const deleteCollection = async (id) => {
+    const entry = collections.find((item) => item.id === id);
+    if (!entry || !activeUser) return;
+    if (!window.confirm(`确定删除“${entry.title}”吗？删除后无法恢复。`)) return;
+    collectionStatus.textContent = "正在删除收藏条目…";
+    const { error } = await client
+      .from("site_collections")
+      .delete()
+      .eq("id", entry.id)
+      .eq("owner_id", activeUser.id);
+    if (error) {
+      collectionStatus.textContent = `删除失败：${error.message}`;
+      return;
+    }
+    if (entry.cover_path) await client.storage.from("site-collection-covers").remove([entry.cover_path]);
+    if (selectedCollection?.id === entry.id) resetCollectionEditor();
+    await fetchCollections();
+    collectionStatus.textContent = "收藏条目已删除。";
+  };
+
+  collectionList.addEventListener("click", (event) => {
+    const edit = event.target.closest("[data-admin-edit-collection]");
+    const remove = event.target.closest("[data-admin-delete-collection]");
+    if (edit) editCollection(edit.dataset.adminEditCollection);
+    if (remove) void deleteCollection(remove.dataset.adminDeleteCollection);
+  });
+  newCollection.addEventListener("click", resetCollectionEditor);
+  deleteCollectionButton.addEventListener("click", () => void deleteCollection(selectedCollection?.id));
 
   const applyMusic = (music) => {
     currentMusic = music || null;

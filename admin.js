@@ -228,7 +228,7 @@
     const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
     loginStatus.textContent = error
-      ? "登录失败：请检查邮箱和密码。"
+      ? "登录失败：请检查邮箱和密码；若尚未设置密码，请点击忘记密码。"
       : "登录成功，正在进入管理后台。";
   });
 

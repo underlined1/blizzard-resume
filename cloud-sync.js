@@ -4,6 +4,7 @@
   const loginEmail = document.querySelector("[data-cloud-login-email]");
   const loginPassword = document.querySelector("[data-cloud-login-password]");
   const loginButton = document.querySelector("[data-cloud-login-button]");
+  const passwordRecoveryButton = document.querySelector("[data-cloud-password-recovery]");
   const account = document.querySelector("[data-cloud-account]");
   const cloudUser = document.querySelector("[data-cloud-user]");
   const changeEmailButton = document.querySelector("[data-cloud-change-email]");
@@ -206,8 +207,26 @@
     const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
     status.textContent = error
-      ? "登录失败：请检查邮箱和密码。"
+      ? "登录失败：请检查邮箱和密码；若尚未设置密码，请点击忘记密码。"
       : "登录成功，正在读取你的云端记录。";
+  });
+
+  passwordRecoveryButton?.addEventListener("click", async () => {
+    const email = loginEmail.value.trim();
+    if (!email) {
+      status.textContent = "请先输入登录邮箱，再点击忘记密码。";
+      loginEmail.focus();
+      return;
+    }
+    passwordRecoveryButton.disabled = true;
+    status.textContent = "正在发送密码设置邮件…";
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: new URL("records.html", window.location.href).href
+    });
+    passwordRecoveryButton.disabled = false;
+    status.textContent = error
+      ? `发送失败：${error.message}`
+      : "如该邮箱已注册，密码设置邮件已发送。打开邮件后可设置新密码。";
   });
 
   setPasswordButton?.addEventListener("click", () => {

@@ -40,7 +40,7 @@
       passwordForm.reset();
       changeEmailButton?.setAttribute("aria-expanded", "false");
       setPasswordButton?.setAttribute("aria-expanded", "false");
-      cloudUser.textContent = `已登录：${user.email || "云端账户"}`;
+      cloudUser.textContent = "已登录：私有账户";
       return;
     }
     loginForm.hidden = false;

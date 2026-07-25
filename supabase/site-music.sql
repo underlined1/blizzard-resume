@@ -13,20 +13,31 @@ grant insert, update, delete on public.site_music to authenticated;
 drop policy if exists "Public can read site music" on public.site_music;
 create policy "Public can read site music" on public.site_music for select using (true);
 drop policy if exists "Owner can add site music" on public.site_music;
-create policy "Owner can add site music" on public.site_music for insert to authenticated with check ((select auth.uid()) = owner_id);
+drop policy if exists "Admin can add site music" on public.site_music;
+create policy "Admin can add site music" on public.site_music for insert to authenticated
+with check ((select public.is_site_admin()) and (select auth.uid()) = owner_id);
 drop policy if exists "Owner can update site music" on public.site_music;
-create policy "Owner can update site music" on public.site_music for update to authenticated using ((select auth.uid()) = owner_id) with check ((select auth.uid()) = owner_id);
+drop policy if exists "Admin can update site music" on public.site_music;
+create policy "Admin can update site music" on public.site_music for update to authenticated
+using ((select public.is_site_admin()) and (select auth.uid()) = owner_id)
+with check ((select public.is_site_admin()) and (select auth.uid()) = owner_id);
+drop policy if exists "Admin can delete site music" on public.site_music;
+create policy "Admin can delete site music" on public.site_music for delete to authenticated
+using ((select public.is_site_admin()) and (select auth.uid()) = owner_id);
 
 insert into storage.buckets (id, name, public)
 values ('site-audio', 'site-audio', true)
 on conflict (id) do update set public = true;
 
 drop policy if exists "Music owner can upload audio" on storage.objects;
-create policy "Music owner can upload audio" on storage.objects for insert to authenticated
-with check (bucket_id = 'site-audio' and (storage.foldername(name))[1] = (select auth.uid()::text));
+drop policy if exists "Admin can upload audio" on storage.objects;
+create policy "Admin can upload audio" on storage.objects for insert to authenticated
+with check (bucket_id = 'site-audio' and (select public.is_site_admin()));
 drop policy if exists "Music owner can view audio objects" on storage.objects;
-create policy "Music owner can view audio objects" on storage.objects for select to authenticated
-using (bucket_id = 'site-audio' and owner_id = (select auth.uid()::text));
+drop policy if exists "Admin can view audio objects" on storage.objects;
+create policy "Admin can view audio objects" on storage.objects for select to authenticated
+using (bucket_id = 'site-audio' and (select public.is_site_admin()));
 drop policy if exists "Music owner can delete audio" on storage.objects;
-create policy "Music owner can delete audio" on storage.objects for delete to authenticated
-using (bucket_id = 'site-audio' and owner_id = (select auth.uid()::text));
+drop policy if exists "Admin can delete audio" on storage.objects;
+create policy "Admin can delete audio" on storage.objects for delete to authenticated
+using (bucket_id = 'site-audio' and (select public.is_site_admin()));

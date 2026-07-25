@@ -33,7 +33,6 @@
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
-  const adminEmailHash = String(config.adminEmailHash || "").toLowerCase();
 
   if (!loginPanel || !isConfigured || !window.supabase?.createClient) {
     if (loginStatus) loginStatus.textContent = "后台尚未完成云端配置，请检查 Supabase 设置后刷新页面。";
@@ -48,14 +47,9 @@
   let currentMusic = null;
   let sessionVersion = 0;
 
-  const isOwnerEmail = async (email) => {
-    if (!email || !/^[a-f0-9]{64}$/.test(adminEmailHash) || !window.crypto?.subtle || typeof TextEncoder === "undefined") {
-      return false;
-    }
-    const value = new TextEncoder().encode(email.trim().toLowerCase());
-    const digest = await window.crypto.subtle.digest("SHA-256", value);
-    const hash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-    return hash === adminEmailHash;
+  const hasAdminAccess = async () => {
+    const { data, error } = await client.rpc("is_site_admin");
+    return { allowed: data === true && !error, error };
   };
 
   const isoToday = () => {
@@ -78,7 +72,7 @@
     passwordForm.hidden = true;
     passwordForm.reset();
     setPasswordButton?.setAttribute("aria-expanded", "false");
-    if (activeUser) adminUser.textContent = `已登录：${activeUser.email || "云端账户"}`;
+    if (activeUser) adminUser.textContent = "已登录：站长账户";
   };
 
   const createEntryCard = (record) => {
@@ -197,11 +191,13 @@
       return;
     }
 
-    const isOwner = await isOwnerEmail(user.email);
+    const { allowed, error } = await hasAdminAccess();
     if (version !== sessionVersion) return;
-    if (!isOwner) {
+    if (!allowed) {
       setDashboard(null);
-      loginStatus.textContent = "此邮箱没有管理后台权限。";
+      loginStatus.textContent = error
+        ? "后台权限尚未配置，请先执行 Supabase 的 admin-access.sql。"
+        : "此账号没有管理后台权限。";
       await client.auth.signOut({ scope: "local" });
       return;
     }
@@ -219,12 +215,6 @@
     const password = loginPassword.value;
     if (!password) return;
     loginButton.disabled = true;
-    const isOwner = await isOwnerEmail(email);
-    if (!isOwner) {
-      loginButton.disabled = false;
-      loginStatus.textContent = "此邮箱没有管理后台权限。";
-      return;
-    }
     loginStatus.textContent = "正在登录…";
     const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;

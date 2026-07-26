@@ -53,22 +53,26 @@
   const interestHighlight = document.querySelector("[data-admin-interest-highlight]");
   const saveInterest = document.querySelector("[data-admin-save-interest]");
   const interestStatus = document.querySelector("[data-admin-interest-status]");
-  const collectionForm = document.querySelector("[data-admin-collection-form]");
-  const collectionType = document.querySelector("[data-admin-collection-type]");
-  const collectionTitle = document.querySelector("[data-admin-collection-title-input]");
-  const collectionCreator = document.querySelector("[data-admin-collection-creator]");
-  const collectionCategory = document.querySelector("[data-admin-collection-category]");
-  const collectionLink = document.querySelector("[data-admin-collection-link]");
-  const collectionNote = document.querySelector("[data-admin-collection-note]");
-  const collectionQuote = document.querySelector("[data-admin-collection-quote]");
-  const collectionCover = document.querySelector("[data-admin-collection-cover]");
-  const collectionCurrentCover = document.querySelector("[data-admin-collection-current-cover]");
-  const saveCollection = document.querySelector("[data-admin-save-collection]");
-  const newCollection = document.querySelector("[data-admin-new-collection]");
-  const deleteCollectionButton = document.querySelector("[data-admin-delete-collection]");
-  const collectionStatus = document.querySelector("[data-admin-collection-status]");
-  const collectionList = document.querySelector("[data-admin-collection-list]");
-  const collectionCount = document.querySelector("[data-admin-collection-count]");
+  const collectionPanels = ["music", "reading"].map((type) => ({
+    type,
+    element: document.querySelector(`[data-admin-collection-panel="${type}"]`),
+    form: document.querySelector(`[data-admin-collection-form="${type}"]`),
+    title: document.querySelector(`[data-admin-collection-title="${type}"]`),
+    creator: document.querySelector(`[data-admin-collection-creator="${type}"]`),
+    category: document.querySelector(`[data-admin-collection-category="${type}"]`),
+    link: document.querySelector(`[data-admin-collection-link="${type}"]`),
+    note: document.querySelector(`[data-admin-collection-note="${type}"]`),
+    quote: document.querySelector(`[data-admin-collection-quote="${type}"]`),
+    cover: document.querySelector(`[data-admin-collection-cover="${type}"]`),
+    currentCover: document.querySelector(`[data-admin-collection-current-cover="${type}"]`),
+    save: document.querySelector(`[data-admin-save-collection="${type}"]`),
+    create: document.querySelector(`[data-admin-new-collection="${type}"]`),
+    remove: document.querySelector(`[data-admin-delete-collection="${type}"]`),
+    status: document.querySelector(`[data-admin-collection-status="${type}"]`),
+    list: document.querySelector(`[data-admin-collection-list="${type}"]`),
+    count: document.querySelector(`[data-admin-collection-count="${type}"]`),
+    selected: null
+  }));
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -89,7 +93,6 @@
   let selectedProject = null;
   let interests = new Map();
   let collections = [];
-  let selectedCollection = null;
   let sessionVersion = 0;
   let passwordRecoveryActive = false;
 
@@ -369,10 +372,10 @@
 
   const collectionCoverUrl = (path) => client.storage.from("site-collection-covers").getPublicUrl(path).data.publicUrl;
 
-  const showCurrentCollectionCover = (entry) => {
-    collectionCurrentCover.replaceChildren();
+  const showCurrentCollectionCover = (panel, entry) => {
+    panel.currentCover.replaceChildren();
     if (!entry?.cover_path) {
-      collectionCurrentCover.hidden = true;
+      panel.currentCover.hidden = true;
       return;
     }
     const link = document.createElement("a");
@@ -380,17 +383,17 @@
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = `当前封面：${entry.cover_name || "打开查看"} ↗`;
-    collectionCurrentCover.append(link);
-    collectionCurrentCover.hidden = false;
+    panel.currentCover.append(link);
+    panel.currentCover.hidden = false;
   };
 
-  const resetCollectionEditor = () => {
-    selectedCollection = null;
-    collectionForm.reset();
-    collectionType.value = "music";
-    saveCollection.textContent = "保存到档案";
-    deleteCollectionButton.hidden = true;
-    showCurrentCollectionCover(null);
+  const resetCollectionEditor = (panel, message) => {
+    panel.selected = null;
+    panel.form.reset();
+    panel.save.textContent = panel.type === "music" ? "保存音乐档案" : "保存阅读档案";
+    panel.remove.hidden = true;
+    showCurrentCollectionCover(panel, null);
+    if (message) panel.status.textContent = message;
   };
 
   const createCollectionCard = (entry) => {
@@ -432,18 +435,23 @@
   };
 
   const renderCollections = () => {
-    collectionCount.textContent = `${collections.length} 条`;
-    collectionList.replaceChildren();
-    if (!collections.length) {
-      const empty = document.createElement("p");
-      empty.className = "admin-empty-state";
-      empty.textContent = "还没有收藏条目。把正在听或读的第一项放进来吧。";
-      collectionList.append(empty);
-      return;
-    }
-    const fragment = document.createDocumentFragment();
-    collections.forEach((entry) => fragment.append(createCollectionCard(entry)));
-    collectionList.append(fragment);
+    collectionPanels.forEach((panel) => {
+      const entries = collections.filter((entry) => entry.collection_type === panel.type);
+      panel.count.textContent = `${entries.length} 条`;
+      panel.list.replaceChildren();
+      if (!entries.length) {
+        const empty = document.createElement("p");
+        empty.className = "admin-empty-state";
+        empty.textContent = panel.type === "music"
+          ? "还没有音乐档案。把正在循环播放的一首歌放进来吧。"
+          : "还没有阅读档案。把正在读或想读的一本书放进来吧。";
+        panel.list.append(empty);
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      entries.forEach((entry) => fragment.append(createCollectionCard(entry)));
+      panel.list.append(fragment);
+    });
   };
 
   const fetchCollections = async () => {
@@ -453,31 +461,38 @@
       .select("id, owner_id, collection_type, title, creator, category, note, quote, external_url, cover_path, cover_name, updated_at")
       .order("updated_at", { ascending: false });
     if (error) {
-      collectionStatus.textContent = "收藏档案尚未配置，请先执行 supabase/site-collections.sql。";
+      collectionPanels.forEach((panel) => {
+        panel.status.textContent = "收藏档案尚未配置，请先执行 supabase/site-collections.sql。";
+      });
       return;
     }
     collections = data || [];
     renderCollections();
-    collectionStatus.textContent = collections.length ? "已加载音乐与阅读档案。" : "从一张喜欢的专辑或一本书开始吧。";
+    collectionPanels.forEach((panel) => {
+      const amount = collections.filter((entry) => entry.collection_type === panel.type).length;
+      panel.status.textContent = amount
+        ? `已加载 ${amount} 条${panel.type === "music" ? "音乐" : "阅读"}档案。`
+        : panel.type === "music" ? "从一首喜欢的歌或一张专辑开始吧。" : "从一本想读的书开始吧。";
+    });
   };
 
-  const editCollection = (id) => {
-    const entry = collections.find((item) => item.id === id);
+  const editCollection = (panel, id) => {
+    const entry = collections.find((item) => item.id === id && item.collection_type === panel.type);
     if (!entry) return;
-    selectedCollection = entry;
-    collectionType.value = entry.collection_type;
-    collectionTitle.value = entry.title;
-    collectionCreator.value = entry.creator || "";
-    collectionCategory.value = entry.category || "";
-    collectionLink.value = entry.external_url || "";
-    collectionNote.value = entry.note || "";
-    collectionQuote.value = entry.quote || "";
-    collectionCover.value = "";
-    saveCollection.textContent = "更新这条档案";
-    deleteCollectionButton.hidden = false;
-    showCurrentCollectionCover(entry);
-    collectionForm.scrollIntoView({ behavior: "smooth", block: "center" });
-    collectionTitle.focus();
+    panel.selected = entry;
+    panel.title.value = entry.title;
+    panel.creator.value = entry.creator || "";
+    panel.category.value = entry.category || "";
+    panel.link.value = entry.external_url || "";
+    panel.note.value = entry.note || "";
+    panel.quote.value = entry.quote || "";
+    panel.cover.value = "";
+    panel.save.textContent = "更新这条档案";
+    panel.remove.hidden = false;
+    showCurrentCollectionCover(panel, entry);
+    panel.status.textContent = `正在编辑：${entry.title}`;
+    panel.form.scrollIntoView({ behavior: "smooth", block: "center" });
+    panel.title.focus();
   };
 
   const fetchRecords = async () => {
@@ -783,48 +798,48 @@
     interestStatus.textContent = "已保存；关于页刷新后会显示新内容。";
   });
 
-  collectionForm.addEventListener("submit", async (event) => {
+  const saveCollection = async (panel, event) => {
     event.preventDefault();
     if (!activeUser) return;
-    const title = collectionTitle.value.trim();
-    const creator = collectionCreator.value.trim();
-    const category = collectionCategory.value.trim();
-    const note = collectionNote.value.trim();
-    const quote = collectionQuote.value.trim();
-    const requestedUrl = collectionLink.value.trim();
+    const title = panel.title.value.trim();
+    const creator = panel.creator.value.trim();
+    const category = panel.category.value.trim();
+    const note = panel.note.value.trim();
+    const quote = panel.quote.value.trim();
+    const requestedUrl = panel.link.value.trim();
     const externalUrl = validExternalUrl(requestedUrl);
-    const file = collectionCover.files?.[0];
+    const file = panel.cover.files?.[0];
     if (!title) return;
     if (requestedUrl && !externalUrl) {
-      collectionStatus.textContent = "外部链接需要以 http:// 或 https:// 开头。";
-      collectionLink.focus();
+      panel.status.textContent = "外部链接需要以 http:// 或 https:// 开头。";
+      panel.link.focus();
       return;
     }
     if (file && (!collectionCoverMimeTypes.has(file.type) || file.size > 5 * 1024 * 1024)) {
-      collectionStatus.textContent = "封面仅支持 PNG、JPG、WEBP 或 GIF，文件请小于 5MB。";
+      panel.status.textContent = "封面仅支持 PNG、JPG、WEBP 或 GIF，文件请小于 5MB。";
       return;
     }
-    saveCollection.disabled = true;
-    collectionStatus.textContent = "正在保存收藏档案…";
-    const previousCoverPath = selectedCollection?.cover_path || null;
+    panel.save.disabled = true;
+    panel.status.textContent = `正在保存${panel.type === "music" ? "音乐" : "阅读"}档案…`;
+    const previousCoverPath = panel.selected?.cover_path || null;
     let coverPath = previousCoverPath;
-    let coverName = selectedCollection?.cover_name || null;
+    let coverName = panel.selected?.cover_name || null;
     if (file) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      coverPath = `${activeUser.id}/covers/${Date.now()}-${safeName}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-120);
+      coverPath = `${activeUser.id}/covers/${Date.now()}-${safeName || "cover-image"}`;
       coverName = file.name;
       const { error: uploadError } = await client.storage
         .from("site-collection-covers")
-        .upload(coverPath, file, { cacheControl: "3600", contentType: file.type });
+        .upload(coverPath, file, { cacheControl: "3600", contentType: file.type, upsert: false });
       if (uploadError) {
-        saveCollection.disabled = false;
-        collectionStatus.textContent = `封面上传失败：${uploadError.message}`;
+        panel.save.disabled = false;
+        panel.status.textContent = `封面上传失败：${uploadError.message}`;
         return;
       }
     }
 
     const details = {
-      collection_type: collectionType.value,
+      collection_type: panel.type,
       title,
       creator,
       category,
@@ -834,14 +849,14 @@
       cover_path: coverPath,
       cover_name: coverName
     };
-    const request = selectedCollection
-      ? client.from("site_collections").update(details).eq("id", selectedCollection.id).eq("owner_id", activeUser.id)
+    const request = panel.selected
+      ? client.from("site_collections").update(details).eq("id", panel.selected.id).eq("owner_id", activeUser.id)
       : client.from("site_collections").insert([{ ...details, owner_id: activeUser.id }]);
     const { error } = await request;
-    saveCollection.disabled = false;
+    panel.save.disabled = false;
     if (error) {
       if (file && coverPath) await client.storage.from("site-collection-covers").remove([coverPath]);
-      collectionStatus.textContent = error.code === "42P01"
+      panel.status.textContent = error.code === "42P01"
         ? "收藏档案尚未配置，请先执行 supabase/site-collections.sql。"
         : `保存失败：${error.message}`;
       return;
@@ -849,39 +864,42 @@
     if (file && previousCoverPath && previousCoverPath !== coverPath) {
       await client.storage.from("site-collection-covers").remove([previousCoverPath]);
     }
-    resetCollectionEditor();
+    resetCollectionEditor(panel);
     await fetchCollections();
-    collectionStatus.textContent = "已保存，关于页刷新后会显示在你的音乐档案或阅读书架中。";
-  });
+    panel.status.textContent = `已保存，关于页刷新后会显示在你的${panel.type === "music" ? "音乐档案" : "阅读书架"}中。`;
+  };
 
-  const deleteCollection = async (id) => {
-    const entry = collections.find((item) => item.id === id);
+  const deleteCollection = async (panel, id) => {
+    const entry = collections.find((item) => item.id === id && item.collection_type === panel.type);
     if (!entry || !activeUser) return;
     if (!window.confirm(`确定删除“${entry.title}”吗？删除后无法恢复。`)) return;
-    collectionStatus.textContent = "正在删除收藏条目…";
+    panel.status.textContent = "正在删除这条档案…";
     const { error } = await client
       .from("site_collections")
       .delete()
       .eq("id", entry.id)
       .eq("owner_id", activeUser.id);
     if (error) {
-      collectionStatus.textContent = `删除失败：${error.message}`;
+      panel.status.textContent = `删除失败：${error.message}`;
       return;
     }
     if (entry.cover_path) await client.storage.from("site-collection-covers").remove([entry.cover_path]);
-    if (selectedCollection?.id === entry.id) resetCollectionEditor();
+    if (panel.selected?.id === entry.id) resetCollectionEditor(panel);
     await fetchCollections();
-    collectionStatus.textContent = "收藏条目已删除。";
+    panel.status.textContent = "档案已删除。";
   };
 
-  collectionList.addEventListener("click", (event) => {
-    const edit = event.target.closest("[data-admin-edit-collection]");
-    const remove = event.target.closest("[data-admin-delete-collection]");
-    if (edit) editCollection(edit.dataset.adminEditCollection);
-    if (remove) void deleteCollection(remove.dataset.adminDeleteCollection);
+  collectionPanels.forEach((panel) => {
+    panel.form.addEventListener("submit", (event) => void saveCollection(panel, event));
+    panel.list.addEventListener("click", (event) => {
+      const edit = event.target.closest("[data-admin-edit-collection]");
+      const remove = event.target.closest("[data-admin-delete-collection]");
+      if (edit) editCollection(panel, edit.dataset.adminEditCollection);
+      if (remove) void deleteCollection(panel, remove.dataset.adminDeleteCollection);
+    });
+    panel.create.addEventListener("click", () => resetCollectionEditor(panel, panel.type === "music" ? "正在新建音乐档案。" : "正在新建阅读档案。"));
+    panel.remove.addEventListener("click", () => void deleteCollection(panel, panel.selected?.id));
   });
-  newCollection.addEventListener("click", resetCollectionEditor);
-  deleteCollectionButton.addEventListener("click", () => void deleteCollection(selectedCollection?.id));
 
   const firstOpenMusicSlot = () => {
     const used = new Set(musicTracks.map((track) => track.sort_order));

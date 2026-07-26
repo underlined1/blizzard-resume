@@ -67,7 +67,7 @@
     toggle.className = "global-music-toggle";
     toggle.dataset.globalMusicToggle = "";
     toggle.setAttribute("aria-label", "播放音乐");
-    toggle.textContent = "▶";
+    toggle.textContent = "播放";
 
     const copy = document.createElement("div");
     copy.className = "global-music-copy";
@@ -109,7 +109,7 @@
     const counter = `${currentIndex + 1} / ${tracks.length}`;
     if (homeTitle) homeTitle.textContent = `NOW PLAYING / ${title} · ${counter}`;
     dockTitle.textContent = title;
-    dockToggle.textContent = player.paused ? "▶" : "Ⅱ";
+    dockToggle.textContent = player.paused ? "播放" : "暂停";
     dockToggle.setAttribute("aria-label", player.paused ? "播放音乐" : "暂停音乐");
     dockMute.textContent = player.muted || player.volume === 0 ? "取消静音" : "静音";
     dockMute.setAttribute("aria-label", dockMute.textContent);

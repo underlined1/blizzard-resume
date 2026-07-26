@@ -123,30 +123,39 @@
             <p class="admin-project-status" data-admin-interest-status aria-live="polite">正在读取兴趣介绍…</p>
           </section>
 
-          <section class="admin-collection-card" aria-labelledby="admin-collection-title">
-            <div class="admin-project-heading"><div><p class="section-kicker">MUSIC &amp; READING ARCHIVE</p><h3 id="admin-collection-title">收藏你的音乐与阅读</h3><p>添加你真正在听和读的内容：类型、歌手/作者、封面、喜欢的歌词或摘录，以及自己的感受。</p></div><span class="admin-record-count" data-admin-collection-count>0 条</span></div>
-            <form class="admin-collection-form" data-admin-collection-form>
-              <label class="sr-only" for="admin-collection-type">收藏类型</label>
-              <select id="admin-collection-type" data-admin-collection-type><option value="music">音乐 / 专辑</option><option value="reading">阅读 / 书籍</option></select>
-              <label class="sr-only" for="admin-collection-title-input">作品名</label>
-              <input id="admin-collection-title-input" data-admin-collection-title-input type="text" maxlength="120" placeholder="歌名、专辑名或书名" required />
-              <label class="sr-only" for="admin-collection-creator">创作者</label>
-              <input id="admin-collection-creator" data-admin-collection-creator type="text" maxlength="100" placeholder="歌手 / 乐队 / 作者（可选）" />
-              <label class="sr-only" for="admin-collection-category">类型标签</label>
-              <input id="admin-collection-category" data-admin-collection-category type="text" maxlength="80" placeholder="例如：独立摇滚、爵士、科幻、历史" />
-              <label class="sr-only" for="admin-collection-link">外部链接</label>
-              <input id="admin-collection-link" data-admin-collection-link type="url" inputmode="url" placeholder="音乐平台、豆瓣或其他链接（可选）" />
-              <label class="sr-only" for="admin-collection-note">你的记录</label>
-              <textarea id="admin-collection-note" data-admin-collection-note rows="5" maxlength="800" placeholder="为什么喜欢它？它陪伴了你哪段时间？"></textarea>
-              <label class="sr-only" for="admin-collection-quote">喜欢的歌词 / 摘录</label>
-              <textarea id="admin-collection-quote" data-admin-collection-quote rows="3" maxlength="300" placeholder="喜欢的一句歌词、书中摘录或自己的短评（可选）"></textarea>
-              <label class="admin-project-file" for="admin-collection-cover"><span>上传专辑 / 书籍封面（可选，图片 5MB 内）</span><input id="admin-collection-cover" data-admin-collection-cover type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
-              <p class="admin-project-current-file" data-admin-collection-current-cover hidden></p>
-              <div class="admin-project-actions"><button class="button button-primary" type="submit" data-admin-save-collection>保存到档案</button><button class="utility-button" type="button" data-admin-new-collection>清空新建</button><button class="utility-button" type="button" data-admin-delete-collection hidden>删除这条</button></div>
-            </form>
-            <p class="admin-project-status" data-admin-collection-status aria-live="polite">正在读取你的收藏档案…</p>
-            <div class="admin-collection-list" data-admin-collection-list aria-live="polite"></div>
-          </section>
+          <div class="admin-collection-stack" aria-label="音乐与阅读档案">
+            <section class="admin-collection-card admin-collection-card-music" data-admin-collection-panel="music" aria-labelledby="admin-music-archive-title">
+              <div class="admin-project-heading"><div><p class="section-kicker">MUSIC ARCHIVE</p><h3 id="admin-music-archive-title">我的音乐档案</h3><p>收藏你喜欢的歌曲与专辑：风格、歌手、歌词、封面和当时的感受。</p></div><span class="admin-record-count" data-admin-collection-count="music">0 条</span></div>
+              <form class="admin-collection-form" data-admin-collection-form="music">
+                <label class="sr-only" for="admin-music-collection-title">歌曲或专辑名</label><input id="admin-music-collection-title" data-admin-collection-title="music" type="text" maxlength="120" placeholder="歌曲名或专辑名" required />
+                <label class="sr-only" for="admin-music-collection-creator">歌手或乐队</label><input id="admin-music-collection-creator" data-admin-collection-creator="music" type="text" maxlength="100" placeholder="歌手 / 乐队（可选）" />
+                <label class="sr-only" for="admin-music-collection-category">音乐风格</label><input id="admin-music-collection-category" data-admin-collection-category="music" type="text" maxlength="80" placeholder="例如：独立摇滚、R&amp;B、爵士" />
+                <label class="sr-only" for="admin-music-collection-link">音乐链接</label><input id="admin-music-collection-link" data-admin-collection-link="music" type="url" inputmode="url" placeholder="音乐平台链接（可选）" />
+                <label class="sr-only" for="admin-music-collection-note">音乐记录</label><textarea id="admin-music-collection-note" data-admin-collection-note="music" rows="5" maxlength="800" placeholder="为什么喜欢它？它陪伴了你哪段时间？"></textarea>
+                <label class="sr-only" for="admin-music-collection-quote">喜欢的歌词</label><textarea id="admin-music-collection-quote" data-admin-collection-quote="music" rows="3" maxlength="300" placeholder="最喜欢的一句歌词或自己的短评（可选）"></textarea>
+                <label class="admin-project-file" for="admin-music-collection-cover"><span>上传专辑封面（可选，图片 5MB 内）</span><input id="admin-music-collection-cover" data-admin-collection-cover="music" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
+                <p class="admin-project-current-file" data-admin-collection-current-cover="music" hidden></p>
+                <div class="admin-project-actions"><button class="button button-primary" type="submit" data-admin-save-collection="music">保存音乐档案</button><button class="utility-button" type="button" data-admin-new-collection="music">新建音乐</button><button class="utility-button" type="button" data-admin-delete-collection="music" hidden>删除这条</button></div>
+              </form>
+              <p class="admin-project-status" data-admin-collection-status="music" aria-live="polite">正在读取音乐档案…</p><div class="admin-collection-list" data-admin-collection-list="music" aria-live="polite"></div>
+            </section>
+
+            <section class="admin-collection-card admin-collection-card-reading" data-admin-collection-panel="reading" aria-labelledby="admin-reading-archive-title">
+              <div class="admin-project-heading"><div><p class="section-kicker">READING SHELF</p><h3 id="admin-reading-archive-title">我的阅读书架</h3><p>记录读过、正在读和想读的书：作者、类别、摘录、封面和你的想法。</p></div><span class="admin-record-count" data-admin-collection-count="reading">0 条</span></div>
+              <form class="admin-collection-form" data-admin-collection-form="reading">
+                <label class="sr-only" for="admin-reading-collection-title">书名</label><input id="admin-reading-collection-title" data-admin-collection-title="reading" type="text" maxlength="120" placeholder="书名" required />
+                <label class="sr-only" for="admin-reading-collection-creator">作者</label><input id="admin-reading-collection-creator" data-admin-collection-creator="reading" type="text" maxlength="100" placeholder="作者（可选）" />
+                <label class="sr-only" for="admin-reading-collection-category">书籍类别</label><input id="admin-reading-collection-category" data-admin-collection-category="reading" type="text" maxlength="80" placeholder="例如：小说、科幻、历史、心理学" />
+                <label class="sr-only" for="admin-reading-collection-link">书籍链接</label><input id="admin-reading-collection-link" data-admin-collection-link="reading" type="url" inputmode="url" placeholder="豆瓣、出版社或其他链接（可选）" />
+                <label class="sr-only" for="admin-reading-collection-note">阅读记录</label><textarea id="admin-reading-collection-note" data-admin-collection-note="reading" rows="5" maxlength="800" placeholder="为什么想读或喜欢它？留下你的阅读感受。"></textarea>
+                <label class="sr-only" for="admin-reading-collection-quote">书中摘录</label><textarea id="admin-reading-collection-quote" data-admin-collection-quote="reading" rows="3" maxlength="300" placeholder="喜欢的一段摘录或自己的短评（可选）"></textarea>
+                <label class="admin-project-file" for="admin-reading-collection-cover"><span>上传书籍封面（可选，图片 5MB 内）</span><input id="admin-reading-collection-cover" data-admin-collection-cover="reading" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
+                <p class="admin-project-current-file" data-admin-collection-current-cover="reading" hidden></p>
+                <div class="admin-project-actions"><button class="button button-primary" type="submit" data-admin-save-collection="reading">保存阅读档案</button><button class="utility-button" type="button" data-admin-new-collection="reading">新建书籍</button><button class="utility-button" type="button" data-admin-delete-collection="reading" hidden>删除这条</button></div>
+              </form>
+              <p class="admin-project-status" data-admin-collection-status="reading" aria-live="polite">正在读取阅读书架…</p><div class="admin-collection-list" data-admin-collection-list="reading" aria-live="polite"></div>
+            </section>
+          </div>
         </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>PRIVATE LOGBOOK.</span><a href="records.html">VIEW CALENDAR ↗</a></footer>

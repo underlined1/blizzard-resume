@@ -59,14 +59,15 @@
           </form>
 
           <section class="admin-music-card" aria-labelledby="admin-music-title">
-            <div><p class="section-kicker">PUBLIC SOUNDTRACK</p><h3 id="admin-music-title">上传全站音乐</h3><p>保存后，首页访客都能播放这首歌。</p></div>
+            <div><p class="section-kicker">PUBLIC PLAYLIST</p><h3 id="admin-music-title">管理全站歌单</h3><p>最多保存 10 首公开歌曲；访客可在首页和其他页面连续收听。</p></div>
             <form class="admin-music-form" data-admin-music-form>
               <input data-admin-music-title type="text" maxlength="80" placeholder="歌曲名称（可选）" />
               <input data-admin-music-file type="file" accept="audio/*" />
-              <button class="button button-primary" type="submit" data-admin-save-music>发布音乐</button>
+              <div class="admin-music-actions"><button class="button button-primary" type="submit" data-admin-save-music>保存歌曲</button><button class="utility-button" type="button" data-admin-new-music>新建歌曲</button><button class="utility-button" type="button" data-admin-delete-music hidden>删除当前歌曲</button></div>
             </form>
-            <p class="admin-music-status" data-admin-music-status>尚未读取公开音乐。</p>
+            <p class="admin-music-status" data-admin-music-status aria-live="polite">正在读取公开歌单…</p>
             <audio class="admin-music-preview" controls preload="metadata" data-admin-music-preview></audio>
+            <div class="admin-music-list" data-admin-music-list aria-live="polite"></div>
           </section>
 
           <div class="admin-workspace">
@@ -153,6 +154,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="security.js"></script>
+    <script src="global-music.js"></script>
     <script src="script.js"></script>
     <script src="admin.js"></script>
   </body>

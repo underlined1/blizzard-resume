@@ -29,8 +29,11 @@
   const musicTitle = document.querySelector("[data-admin-music-title]");
   const musicFile = document.querySelector("[data-admin-music-file]");
   const saveMusic = document.querySelector("[data-admin-save-music]");
+  const newMusic = document.querySelector("[data-admin-new-music]");
+  const deleteMusic = document.querySelector("[data-admin-delete-music]");
   const musicStatus = document.querySelector("[data-admin-music-status]");
   const musicPreview = document.querySelector("[data-admin-music-preview]");
+  const musicList = document.querySelector("[data-admin-music-list]");
   const projectForm = document.querySelector("[data-admin-project-form]");
   const projectName = document.querySelector("[data-admin-project-name]");
   const projectUrl = document.querySelector("[data-admin-project-url]");
@@ -80,7 +83,8 @@
   let records = [];
   let selectedDate = null;
   let selectedRecordId = null;
-  let currentMusic = null;
+  let musicTracks = [];
+  let selectedMusic = null;
   let projects = [];
   let selectedProject = null;
   let interests = new Map();
@@ -879,69 +883,171 @@
   newCollection.addEventListener("click", resetCollectionEditor);
   deleteCollectionButton.addEventListener("click", () => void deleteCollection(selectedCollection?.id));
 
-  const applyMusic = (music) => {
-    currentMusic = music || null;
-    if (!music?.audio_path) {
-      musicStatus.textContent = "还没有发布公开音乐。";
-      musicPreview.removeAttribute("src");
-      return;
-    }
-    const { data } = client.storage.from("site-audio").getPublicUrl(music.audio_path);
-    musicPreview.src = data.publicUrl;
-    musicTitle.value = music.title || "";
-    musicStatus.textContent = `当前公开音乐：${music.title || "未命名"}`;
+  const firstOpenMusicSlot = () => {
+    const used = new Set(musicTracks.map((track) => track.sort_order));
+    return Array.from({ length: 10 }, (_, index) => index + 1).find((slot) => !used.has(slot)) || null;
   };
 
-  const fetchMusic = async () => {
-    const { data, error } = await client.from("site_music").select("id, owner_id, title, audio_path").eq("id", 1).maybeSingle();
-    if (error) {
-      musicStatus.textContent = "音乐存储尚未配置，请先执行 site-music.sql。";
+  const resetMusicEditor = (message = "选择一首歌曲即可修改；也可以新建歌曲。") => {
+    selectedMusic = null;
+    musicTitle.value = "";
+    musicFile.value = "";
+    musicPreview.removeAttribute("src");
+    musicPreview.load();
+    deleteMusic.hidden = true;
+    musicStatus.textContent = message;
+  };
+
+  const renderMusicList = () => {
+    musicList.textContent = "";
+    if (!musicTracks.length) {
+      const empty = document.createElement("p");
+      empty.className = "admin-project-status";
+      empty.textContent = "还没有歌曲。上传第一首后，它会出现在全站公开播放器中。";
+      musicList.append(empty);
       return;
     }
-    applyMusic(data);
+    musicTracks.forEach((track) => {
+      const entry = document.createElement("article");
+      entry.className = "admin-music-entry";
+      const order = document.createElement("span");
+      order.className = "admin-music-order";
+      order.textContent = String(track.sort_order);
+      const name = document.createElement("strong");
+      name.textContent = track.title || "未命名歌曲";
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "utility-button";
+      edit.dataset.adminEditMusic = String(track.id);
+      edit.textContent = "修改";
+      entry.append(order, name, edit);
+      musicList.append(entry);
+    });
+  };
+
+  const selectMusic = (id, message) => {
+    const track = musicTracks.find((item) => String(item.id) === String(id));
+    if (!track) {
+      resetMusicEditor(message);
+      return;
+    }
+    selectedMusic = track;
+    musicTitle.value = track.title || "";
+    musicFile.value = "";
+    const { data } = client.storage.from("site-audio").getPublicUrl(track.audio_path);
+    musicPreview.src = data.publicUrl;
+    deleteMusic.hidden = false;
+    musicStatus.textContent = message || `正在修改第 ${track.sort_order} 首：${track.title || "未命名歌曲"}`;
+  };
+
+  const fetchMusic = async (selectId = selectedMusic?.id) => {
+    const { data, error } = await client
+      .from("site_music")
+      .select("id, owner_id, title, audio_path, sort_order")
+      .order("sort_order", { ascending: true })
+      .limit(10);
+    if (error) {
+      musicStatus.textContent = "歌单数据库尚未升级，请在 Supabase 执行 music-playlist-migration.sql。";
+      return;
+    }
+    musicTracks = data || [];
+    renderMusicList();
+    if (selectId) selectMusic(selectId);
+    else resetMusicEditor(musicTracks.length ? `当前已有 ${musicTracks.length} / 10 首歌曲。` : "还没有歌曲，可以从这里上传第一首。");
+  };
+
+  const isAudioFile = (file) => {
+    if (file.type?.startsWith("audio/")) return true;
+    return /\.(mp3|m4a|aac|ogg|wav|flac)$/i.test(file.name || "");
   };
 
   musicForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!activeUser) return;
     const file = musicFile.files?.[0];
-    if (!file && !currentMusic) {
-      musicStatus.textContent = "请先选择一首音频文件。";
+    if (!selectedMusic && musicTracks.length >= 10) {
+      musicStatus.textContent = "歌单已满 10 首。请先删除或修改其中一首。";
       return;
     }
-    if (file && (!file.type.startsWith("audio/") || file.size > 20 * 1024 * 1024)) {
-      musicStatus.textContent = "请上传小于 20MB 的音频文件。";
+    if (!file && !selectedMusic) {
+      musicStatus.textContent = "新建歌曲时，请先选择一个音频文件。";
       return;
     }
+    if (file && (!isAudioFile(file) || file.size > 20 * 1024 * 1024)) {
+      musicStatus.textContent = "请上传音频文件，且单个文件不能超过 20MB。";
+      return;
+    }
+
     saveMusic.disabled = true;
-    musicStatus.textContent = "正在上传并发布音乐…";
-    let audioPath = currentMusic?.audio_path;
+    musicStatus.textContent = "正在安全上传并保存歌曲…";
+    const oldPath = selectedMusic?.audio_path;
+    let audioPath = oldPath;
     if (file) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-120) || "track-audio";
       audioPath = `${activeUser.id}/${Date.now()}-${safeName}`;
-      const { error: uploadError } = await client.storage.from("site-audio").upload(audioPath, file, { cacheControl: "3600", contentType: file.type });
+      const { error: uploadError } = await client.storage.from("site-audio").upload(audioPath, file, {
+        cacheControl: "3600",
+        contentType: file.type || "audio/mpeg",
+        upsert: false
+      });
       if (uploadError) {
         saveMusic.disabled = false;
         musicStatus.textContent = `上传失败：${uploadError.message}`;
         return;
       }
     }
-    const title = musicTitle.value.trim() || file?.name || currentMusic?.title || "暴风雪的歌单";
-    const { error } = await client.from("site_music").upsert([{
-      id: 1, owner_id: activeUser.id, title, audio_path: audioPath
-    }], { onConflict: "id" });
+
+    const title = musicTitle.value.trim() || file?.name || selectedMusic?.title || "暴风雪的歌单";
+    const payload = {
+      owner_id: activeUser.id,
+      title,
+      audio_path: audioPath,
+      sort_order: selectedMusic?.sort_order || firstOpenMusicSlot(),
+      updated_at: new Date().toISOString()
+    };
+    const request = selectedMusic
+      ? client.from("site_music").update(payload).eq("id", selectedMusic.id).eq("owner_id", activeUser.id)
+      : client.from("site_music").insert(payload);
+    const { error } = await request;
     saveMusic.disabled = false;
     if (error) {
       if (file && audioPath) await client.storage.from("site-audio").remove([audioPath]);
-      musicStatus.textContent = `发布失败：${error.message}`;
+      musicStatus.textContent = `保存失败：${error.message}`;
       return;
     }
-    if (file && currentMusic?.audio_path && currentMusic.audio_path !== audioPath) {
-      await client.storage.from("site-audio").remove([currentMusic.audio_path]);
-    }
+    if (file && oldPath && oldPath !== audioPath) await client.storage.from("site-audio").remove([oldPath]);
     musicFile.value = "";
+    await fetchMusic(selectedMusic?.id);
+    musicStatus.textContent = "歌曲已保存，访客刷新后会看到更新后的歌单。";
+  });
+
+  musicList.addEventListener("click", (event) => {
+    const edit = event.target.closest("[data-admin-edit-music]");
+    if (edit) selectMusic(edit.dataset.adminEditMusic);
+  });
+  newMusic.addEventListener("click", () => {
+    if (musicTracks.length >= 10) {
+      musicStatus.textContent = "歌单已满 10 首。请先删除或修改其中一首。";
+      return;
+    }
+    resetMusicEditor(`正在新建第 ${firstOpenMusicSlot()} 首歌曲。`);
+  });
+  deleteMusic.addEventListener("click", async () => {
+    if (!selectedMusic || !activeUser) return;
+    if (!window.confirm(`确定删除“${selectedMusic.title || "未命名歌曲"}”吗？删除后无法恢复。`)) return;
+    deleteMusic.disabled = true;
+    musicStatus.textContent = "正在删除歌曲…";
+    const track = selectedMusic;
+    const { error } = await client.from("site_music").delete().eq("id", track.id).eq("owner_id", activeUser.id);
+    deleteMusic.disabled = false;
+    if (error) {
+      musicStatus.textContent = `删除失败：${error.message}`;
+      return;
+    }
+    await client.storage.from("site-audio").remove([track.audio_path]);
+    resetMusicEditor();
     await fetchMusic();
-    musicStatus.textContent = "音乐已发布，首页访客刷新后即可播放。";
+    musicStatus.textContent = "歌曲已删除。";
   });
 
   signOutButton.addEventListener("click", async () => {

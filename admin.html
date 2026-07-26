@@ -87,6 +87,10 @@
 
             <section class="admin-history-card" aria-labelledby="admin-history-title">
               <div class="admin-card-heading"><div><p class="section-kicker">YOUR ARCHIVE</p><h3 id="admin-history-title">全部记录</h3></div><span class="admin-record-count" data-admin-record-count>0 条</span></div>
+              <aside class="admin-delete-feedback" data-admin-delete-feedback hidden role="status" aria-live="assertive">
+                <p data-admin-delete-feedback-message></p>
+                <button class="utility-button" type="button" data-admin-delete-feedback-close>关闭</button>
+              </aside>
               <div class="admin-archive-tools" aria-label="记录筛选工具">
                 <label>搜索内容<input type="search" data-admin-record-search maxlength="100" placeholder="关键词、日期或内容" /></label>
                 <label>筛选月份<input type="month" data-admin-record-month /></label>

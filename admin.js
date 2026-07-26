@@ -31,6 +31,9 @@
   const recordReset = document.querySelector("[data-admin-record-reset]");
   const recordSummary = document.querySelector("[data-admin-record-summary]");
   const recordLoadMore = document.querySelector("[data-admin-record-load-more]");
+  const deleteFeedback = document.querySelector("[data-admin-delete-feedback]");
+  const deleteFeedbackMessage = document.querySelector("[data-admin-delete-feedback-message]");
+  const closeDeleteFeedback = document.querySelector("[data-admin-delete-feedback-close]");
   const musicForm = document.querySelector("[data-admin-music-form]");
   const musicTitle = document.querySelector("[data-admin-music-title]");
   const musicFile = document.querySelector("[data-admin-music-file]");
@@ -124,6 +127,13 @@
 
   const updateEntryNoteCount = () => {
     if (entryNoteCount && entryNote) entryNoteCount.textContent = `${entryNote.value.length} / 4000 字`;
+  };
+
+  const showDeleteFeedback = (state, message) => {
+    if (!deleteFeedback || !deleteFeedbackMessage) return;
+    deleteFeedback.dataset.state = state;
+    deleteFeedbackMessage.textContent = message;
+    deleteFeedback.hidden = false;
   };
 
   const filteredRecords = () => {
@@ -581,29 +591,36 @@
     const record = records.find((item) => item.id === recordId);
     if (!activeUser || !record) {
       status.textContent = "找不到要删除的记录，请刷新后重试。";
+      showDeleteFeedback("error", "删除未开始：找不到这条记录。请刷新页面后重试。");
       return;
     }
     const confirmed = window.confirm(`确定删除 ${formatDate(record.checkin_date)} 的记录吗？删除后无法恢复。`);
-    if (!confirmed) return;
+    if (!confirmed) {
+      showDeleteFeedback("info", "已取消删除，这条记录没有被修改。");
+      return;
+    }
     status.textContent = "正在删除记录…";
+    showDeleteFeedback("pending", `正在请求删除 ${formatDate(record.checkin_date)} 的云端记录…`);
     const { data, error } = await client
       .from("study_checkins")
       .delete()
-      .eq("user_id", activeUser.id)
       .eq("id", record.id)
       .select("id");
     if (error) {
       status.textContent = `删除失败：${error.message}`;
+      showDeleteFeedback("error", `Supabase 拒绝删除：${error.message}${error.code ? `（代码 ${error.code}）` : ""}`);
       return;
     }
     if (!data?.some((item) => item.id === record.id)) {
       status.textContent = "这条记录没有被删除。它可能已被修改、没有删除权限，或不属于当前账号；已重新读取云端记录。";
+      showDeleteFeedback("error", "Supabase 返回“未删除任何记录”。通常表示 RLS 权限仍未生效，或该记录已被其他操作修改。已重新读取云端数据。");
       await fetchRecords();
       return;
     }
     if (selectedRecordId === record.id) resetEditor();
     await fetchRecords();
     status.textContent = "记录已从云端删除。";
+    showDeleteFeedback("success", `${formatDate(record.checkin_date)} 的记录已从 Supabase 云端删除。`);
   };
 
   const activateSession = async (session) => {
@@ -754,6 +771,9 @@
   });
 
   entryNote?.addEventListener("input", updateEntryNoteCount);
+  closeDeleteFeedback?.addEventListener("click", () => {
+    if (deleteFeedback) deleteFeedback.hidden = true;
+  });
   entryDate?.addEventListener("change", startEntryForDate);
   const applyArchiveFilter = () => {
     archiveVisibleCount = archivePageSize;

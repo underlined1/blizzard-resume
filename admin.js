@@ -267,6 +267,26 @@
     entryNote.focus();
   };
 
+  const startEntryForDate = () => {
+    const date = entryDate.value;
+    if (!date || date === selectedDate) return;
+    const existing = records.find((item) => item.checkin_date === date);
+    if (existing) {
+      editRecord(date);
+      status.textContent = "已打开这一天已有的记录；保存会更新该日期的内容。";
+      return;
+    }
+    selectedDate = null;
+    selectedRecordId = null;
+    entryNote.value = "";
+    entryChecked.checked = true;
+    deleteEntry.hidden = true;
+    saveEntry.textContent = "保存为新的云端记录";
+    updateEntryNoteCount();
+    status.textContent = `正在为 ${formatDate(date)} 新建记录；保存后会写入云端。`;
+    entryNote.focus();
+  };
+
   const showCurrentProjectFile = (project) => {
     projectCurrentFile.replaceChildren();
     if (!project?.file_path) {
@@ -724,6 +744,7 @@
   });
 
   entryNote?.addEventListener("input", updateEntryNoteCount);
+  entryDate?.addEventListener("change", startEntryForDate);
   const applyArchiveFilter = () => {
     archiveVisibleCount = archivePageSize;
     renderRecords();

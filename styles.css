@@ -360,6 +360,12 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .admin-project-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: auto; font: 10px var(--mono); }
 .admin-project-entry .admin-entry-card-actions { margin-top: 16px; }
 
+/* Check-in archive for a long-running daily log */
+.admin-entry-note-count { min-height: 18px; margin: 7px 0 0; color: #405460; font: 10px var(--mono); text-align: right; }
+.admin-archive-tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(135px, .45fr) auto; gap: 9px; align-items: end; margin: -5px 0 10px; }.admin-archive-tools label { display: grid; gap: 6px; color: #405460; font: 10px var(--mono); }.admin-archive-tools input { min-width: 0; min-height: 42px; box-sizing: border-box; padding: 10px; border: 1px solid var(--ink); border-radius: 0; outline: 0; background: var(--paper); color: var(--ink); font: 11px var(--mono); }.admin-archive-tools input:focus { box-shadow: 3px 3px 0 var(--violet); }.admin-archive-tools .utility-button { min-height: 42px; color: var(--ink); border-color: var(--ink); white-space: nowrap; }.admin-archive-summary { min-height: 20px; margin: 0 0 15px; color: #405460; font: 10px/1.65 var(--mono); }.admin-load-more { display: block; width: 100%; min-height: 50px; margin-top: 16px; color: var(--ink); border-color: var(--ink); }.admin-load-more:hover { background: var(--ink); color: var(--paper); }
+
+@media (max-width: 620px) { .admin-archive-tools { grid-template-columns: 1fr; }.admin-archive-tools .utility-button { width: 100%; }.admin-entry-note-count { text-align: left; } }
+
 /* Public works loaded from the admin dashboard */
 .published-projects { margin-top: 112px; padding-top: 28px; border-top: 1px solid var(--line); }
 .published-projects-heading { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 35px; }

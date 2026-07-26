@@ -25,6 +25,12 @@
   const newEntry = document.querySelector("[data-admin-new-entry]");
   const entryList = document.querySelector("[data-admin-entry-list]");
   const recordCount = document.querySelector("[data-admin-record-count]");
+  const entryNoteCount = document.querySelector("[data-admin-entry-note-count]");
+  const recordSearch = document.querySelector("[data-admin-record-search]");
+  const recordMonth = document.querySelector("[data-admin-record-month]");
+  const recordReset = document.querySelector("[data-admin-record-reset]");
+  const recordSummary = document.querySelector("[data-admin-record-summary]");
+  const recordLoadMore = document.querySelector("[data-admin-record-load-more]");
   const musicForm = document.querySelector("[data-admin-music-form]");
   const musicTitle = document.querySelector("[data-admin-music-title]");
   const musicFile = document.querySelector("[data-admin-music-file]");
@@ -95,6 +101,8 @@
   let collections = [];
   let sessionVersion = 0;
   let passwordRecoveryActive = false;
+  const archivePageSize = 12;
+  let archiveVisibleCount = archivePageSize;
 
   const hasAdminAccess = async () => {
     const { data, error } = await client.rpc("is_site_admin");
@@ -113,6 +121,31 @@
     day: "numeric",
     weekday: "short"
   }).format(new Date(`${date}T00:00:00`));
+
+  const updateEntryNoteCount = () => {
+    if (entryNoteCount && entryNote) entryNoteCount.textContent = `${entryNote.value.length} / 4000 字`;
+  };
+
+  const filteredRecords = () => {
+    const query = recordSearch?.value.trim().toLocaleLowerCase("zh-CN") || "";
+    const month = recordMonth?.value || "";
+    return records.filter((record) => {
+      const matchesMonth = !month || record.checkin_date.startsWith(month);
+      const text = `${record.checkin_date} ${record.note || ""}`.toLocaleLowerCase("zh-CN");
+      return matchesMonth && (!query || text.includes(query));
+    });
+  };
+
+  const updateArchiveControls = (filtered) => {
+    if (recordSummary) {
+      const shown = Math.min(archiveVisibleCount, filtered.length);
+      recordSummary.textContent = filtered.length
+        ? `正在显示 ${shown} / ${filtered.length} 条；云端共保存 ${records.length} 条记录。`
+        : records.length ? "没有符合当前筛选条件的记录。" : "还没有云端记录，从左侧写下第一条吧。";
+    }
+    if (recordLoadMore) recordLoadMore.hidden = archiveVisibleCount >= filtered.length;
+    if (recordReset) recordReset.hidden = !(recordSearch?.value || recordMonth?.value);
+  };
 
   const validExternalUrl = (value) => {
     if (!value) return null;
@@ -186,6 +219,15 @@
   const renderRecords = () => {
     recordCount.textContent = `${records.length} 条`;
     entryList.replaceChildren();
+    const matchingRecords = filteredRecords();
+    updateArchiveControls(matchingRecords);
+    if (records.length && !matchingRecords.length) {
+      const empty = document.createElement("p");
+      empty.className = "admin-empty-state";
+      empty.textContent = "没有找到匹配的记录。试试更换关键词或清除月份筛选。";
+      entryList.append(empty);
+      return;
+    }
     if (!records.length) {
       const empty = document.createElement("p");
       empty.className = "admin-empty-state";
@@ -194,7 +236,7 @@
       return;
     }
     const fragment = document.createDocumentFragment();
-    records.forEach((record) => fragment.append(createEntryCard(record)));
+    matchingRecords.slice(0, archiveVisibleCount).forEach((record) => fragment.append(createEntryCard(record)));
     entryList.append(fragment);
   };
 
@@ -205,6 +247,7 @@
     entryDate.max = isoToday();
     entryDate.value = isoToday();
     entryChecked.checked = true;
+    updateEntryNoteCount();
     deleteEntry.hidden = true;
     saveEntry.textContent = "保存到云端";
   };
@@ -217,6 +260,7 @@
     entryDate.value = record.checkin_date;
     entryNote.value = record.note || "";
     entryChecked.checked = Boolean(record.checked);
+    updateEntryNoteCount();
     deleteEntry.hidden = false;
     saveEntry.textContent = "更新这条记录";
     entryForm.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -508,6 +552,7 @@
       return;
     }
     records = data || [];
+    archiveVisibleCount = archivePageSize;
     renderRecords();
     status.textContent = "云端记录已加载。";
   };
@@ -676,6 +721,23 @@
     const remove = event.target.closest("[data-admin-delete-date]");
     if (edit) editRecord(edit.dataset.adminEditDate);
     if (remove) void deleteRecord(remove.dataset.adminDeleteDate);
+  });
+
+  entryNote?.addEventListener("input", updateEntryNoteCount);
+  const applyArchiveFilter = () => {
+    archiveVisibleCount = archivePageSize;
+    renderRecords();
+  };
+  recordSearch?.addEventListener("input", applyArchiveFilter);
+  recordMonth?.addEventListener("change", applyArchiveFilter);
+  recordReset?.addEventListener("click", () => {
+    if (recordSearch) recordSearch.value = "";
+    if (recordMonth) recordMonth.value = "";
+    applyArchiveFilter();
+  });
+  recordLoadMore?.addEventListener("click", () => {
+    archiveVisibleCount += archivePageSize;
+    renderRecords();
   });
 
   newEntry.addEventListener("click", resetEditor);

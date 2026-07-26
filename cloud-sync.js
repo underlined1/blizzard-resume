@@ -20,6 +20,7 @@
   const cancelPassword = document.querySelector("[data-cloud-cancel-password]");
   const signOutButton = document.querySelector("[data-cloud-sign-out]");
   const storageKey = "blizzard-calendar-checkins-v1";
+  const syncMetaStorageKey = "blizzard-calendar-checkins-sync-meta-v1";
   const config = window.SUPABASE_CONFIG || {};
   const isConfigured = typeof config.url === "string" && config.url.startsWith("https://")
     && typeof config.publishableKey === "string" && config.publishableKey.length > 20;
@@ -89,6 +90,24 @@
     }
   };
 
+  const readSyncMeta = () => {
+    try {
+      return JSON.parse(localStorage.getItem(syncMetaStorageKey) || "{}") || {};
+    } catch {
+      return {};
+    }
+  };
+
+  const writeLastSync = (userId) => {
+    try {
+      const meta = readSyncMeta();
+      meta[userId] = { syncedAt: new Date().toISOString() };
+      localStorage.setItem(syncMetaStorageKey, JSON.stringify(meta));
+    } catch {
+      // The calendar remains usable if browser storage is unavailable.
+    }
+  };
+
   const timestamp = (value) => {
     const parsed = Date.parse(value || "");
     return Number.isFinite(parsed) ? parsed : 0;
@@ -117,6 +136,7 @@
 
       const mergedRecords = { ...localRecords };
       const rowsToUpload = [];
+      const lastSyncedAt = timestamp(readSyncMeta()[activeUser.id]?.syncedAt);
       (cloudRows || []).forEach((row) => {
         const localRecord = localRecords[row.checkin_date];
         if (!localRecord || timestamp(localRecord.updatedAt) <= timestamp(row.updated_at)) {
@@ -132,7 +152,14 @@
 
       Object.entries(localRecords).forEach(([date, record]) => {
         if (!(cloudRows || []).some((row) => row.checkin_date === date)) {
-          rowsToUpload.push(toCloudRow(date, record));
+          // A cache entry older than this browser's last successful sync was
+          // removed in the cloud (for example from the admin page). Cloud
+          // deletion wins, instead of silently resurrecting that record.
+          if (lastSyncedAt && timestamp(record.updatedAt) <= lastSyncedAt) {
+            delete mergedRecords[date];
+          } else {
+            rowsToUpload.push(toCloudRow(date, record));
+          }
         }
       });
 
@@ -146,10 +173,12 @@
       const before = JSON.stringify(localRecords);
       const after = JSON.stringify(mergedRecords);
       if (before !== after && writeLocalRecords(mergedRecords)) {
+        writeLastSync(activeUser.id);
         window.location.reload();
         return;
       }
 
+      writeLastSync(activeUser.id);
       setEditingAccess(true);
       status.textContent = rowsToUpload.length ? "已把本机记录同步到云端。" : "云端同步已开启，打卡会自动保存。";
     } catch (error) {

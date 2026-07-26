@@ -107,6 +107,8 @@
   const archivePageSize = 12;
   let archiveVisibleCount = archivePageSize;
   let pendingDeleteId = null;
+  let entryDeleteNotice = null;
+  const calendarStorageKey = "blizzard-calendar-checkins-v1";
 
   const hasAdminAccess = async () => {
     const { data, error } = await client.rpc("is_site_admin");
@@ -135,6 +137,25 @@
     deleteFeedback.dataset.state = state;
     deleteFeedbackMessage.textContent = message;
     deleteFeedback.hidden = false;
+  };
+
+  const setEntryDeleteNotice = (recordId, state, message) => {
+    entryDeleteNotice = { recordId, state, message };
+  };
+
+  // `records.html` keeps a local calendar cache.  Remove the matching cache
+  // entry only after Supabase confirms the deletion, so a later sync cannot
+  // create the deleted cloud row again.
+  const removeLocalCalendarRecord = (date) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(calendarStorageKey) || "{}") || {};
+      if (!Object.prototype.hasOwnProperty.call(stored, date)) return true;
+      delete stored[date];
+      localStorage.setItem(calendarStorageKey, JSON.stringify(stored));
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const filteredRecords = () => {
@@ -210,6 +231,15 @@
     const note = document.createElement("p");
     note.textContent = record.note || "这一天还没有文字记录。";
 
+    const deleteNotice = entryDeleteNotice?.recordId === record.id
+      ? document.createElement("p")
+      : null;
+    if (deleteNotice) {
+      deleteNotice.className = `admin-entry-delete-note is-${entryDeleteNotice.state}`;
+      deleteNotice.textContent = entryDeleteNotice.message;
+      deleteNotice.setAttribute("role", entryDeleteNotice.state === "error" ? "alert" : "status");
+    }
+
     const actions = document.createElement("div");
     actions.className = "admin-entry-card-actions";
     if (pendingDeleteId === record.id) {
@@ -237,7 +267,9 @@
       remove.textContent = "删除";
       actions.append(edit, remove);
     }
-    article.append(top, note, actions);
+    article.append(top, note);
+    if (deleteNotice) article.append(deleteNotice);
+    article.append(actions);
     return article;
   };
 
@@ -606,12 +638,16 @@
     const record = records.find((item) => item.id === recordId);
     if (!activeUser || !record) {
       status.textContent = "找不到要删除的记录，请刷新后重试。";
+      setEntryDeleteNotice(recordId, "error", "删除未开始：找不到这条记录。请刷新页面后重试。");
       showDeleteFeedback("error", "删除未开始：找不到这条记录。请刷新页面后重试。");
+      renderRecords();
       return;
     }
     pendingDeleteId = null;
     status.textContent = "正在删除记录…";
+    setEntryDeleteNotice(record.id, "pending", "正在删除：已向 Supabase 发送请求，请稍候。 ");
     showDeleteFeedback("pending", `正在请求删除 ${formatDate(record.checkin_date)} 的云端记录…`);
+    renderRecords();
     const { data, error } = await client
       .from("study_checkins")
       .delete()
@@ -619,29 +655,38 @@
       .select("id");
     if (error) {
       status.textContent = `删除失败：${error.message}`;
+      setEntryDeleteNotice(record.id, "error", `删除失败：${error.message}${error.code ? `（代码 ${error.code}）` : ""}`);
       showDeleteFeedback("error", `Supabase 拒绝删除：${error.message}${error.code ? `（代码 ${error.code}）` : ""}`);
       renderRecords();
       return;
     }
     if (!data?.some((item) => item.id === record.id)) {
       status.textContent = "这条记录没有被删除。它可能已被修改、没有删除权限，或不属于当前账号；已重新读取云端记录。";
+      setEntryDeleteNotice(record.id, "error", "云端没有删除这条记录（通常是权限规则问题）；记录没有被移除。请按页面提示检查 Supabase。 ");
       showDeleteFeedback("error", "Supabase 返回“未删除任何记录”。通常表示 RLS 权限仍未生效，或该记录已被其他操作修改。已重新读取云端数据。");
       await fetchRecords();
       return;
     }
     if (selectedRecordId === record.id) resetEditor();
+    const localRemoved = removeLocalCalendarRecord(record.checkin_date);
+    entryDeleteNotice = null;
     await fetchRecords();
-    status.textContent = "记录已从云端删除。";
-    showDeleteFeedback("success", `${formatDate(record.checkin_date)} 的记录已从 Supabase 云端删除。`);
+    status.textContent = localRemoved ? "记录已从云端和本浏览器日历删除。" : "记录已从云端删除；本地缓存未能清理，请在记录页刷新后确认。";
+    showDeleteFeedback(localRemoved ? "success" : "error", localRemoved
+      ? `${formatDate(record.checkin_date)} 已从 Supabase 和本浏览器日历删除；刷新不会恢复。`
+      : "云端已删除，但本地缓存未能清理。请刷新记录页后再确认。 ");
   };
 
   const requestRecordDeletion = (recordId) => {
     const record = records.find((item) => item.id === recordId);
     if (!record) {
+      setEntryDeleteNotice(recordId, "error", "找不到这条记录。请刷新页面后再试。");
       showDeleteFeedback("error", "找不到这条记录。请刷新页面后再试。");
+      renderRecords();
       return;
     }
     pendingDeleteId = recordId;
+    setEntryDeleteNotice(recordId, "info", "请再点击红色“确认删除”。确认后会同时移除云端与本浏览器缓存。 ");
     showDeleteFeedback("info", `请确认删除 ${formatDate(record.checkin_date)} 的记录；删除后无法恢复。`);
     renderRecords();
   };
@@ -796,6 +841,7 @@
     if (confirm) void deleteRecord(confirm.dataset.adminConfirmDeleteId);
     if (cancel) {
       pendingDeleteId = null;
+      setEntryDeleteNotice(cancel.dataset.adminCancelDeleteId, "info", "已取消删除，这条记录没有被修改。");
       showDeleteFeedback("info", "已取消删除，这条记录没有被修改。");
       renderRecords();
     }

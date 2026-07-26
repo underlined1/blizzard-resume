@@ -209,7 +209,7 @@
     const remove = document.createElement("button");
     remove.className = "utility-button";
     remove.type = "button";
-    remove.dataset.adminDeleteDate = record.checkin_date;
+    remove.dataset.adminDeleteId = record.id;
     remove.textContent = "删除";
     actions.append(edit, remove);
     article.append(top, note, actions);
@@ -577,21 +577,31 @@
     status.textContent = "云端记录已加载。";
   };
 
-  const deleteRecord = async (date) => {
-    if (!activeUser || !date) return;
-    const confirmed = window.confirm("确定删除这条记录吗？删除后无法恢复。");
+  const deleteRecord = async (recordId) => {
+    const record = records.find((item) => item.id === recordId);
+    if (!activeUser || !record) {
+      status.textContent = "找不到要删除的记录，请刷新后重试。";
+      return;
+    }
+    const confirmed = window.confirm(`确定删除 ${formatDate(record.checkin_date)} 的记录吗？删除后无法恢复。`);
     if (!confirmed) return;
     status.textContent = "正在删除记录…";
-    const { error } = await client
+    const { data, error } = await client
       .from("study_checkins")
       .delete()
       .eq("user_id", activeUser.id)
-      .eq("checkin_date", date);
+      .eq("id", record.id)
+      .select("id");
     if (error) {
       status.textContent = `删除失败：${error.message}`;
       return;
     }
-    if (selectedDate === date) resetEditor();
+    if (!data?.some((item) => item.id === record.id)) {
+      status.textContent = "这条记录没有被删除。它可能已被修改、没有删除权限，或不属于当前账号；已重新读取云端记录。";
+      await fetchRecords();
+      return;
+    }
+    if (selectedRecordId === record.id) resetEditor();
     await fetchRecords();
     status.textContent = "记录已从云端删除。";
   };
@@ -738,9 +748,9 @@
 
   entryList.addEventListener("click", (event) => {
     const edit = event.target.closest("[data-admin-edit-date]");
-    const remove = event.target.closest("[data-admin-delete-date]");
+    const remove = event.target.closest("[data-admin-delete-id]");
     if (edit) editRecord(edit.dataset.adminEditDate);
-    if (remove) void deleteRecord(remove.dataset.adminDeleteDate);
+    if (remove) void deleteRecord(remove.dataset.adminDeleteId);
   });
 
   entryNote?.addEventListener("input", updateEntryNoteCount);
@@ -762,7 +772,13 @@
   });
 
   newEntry.addEventListener("click", resetEditor);
-  deleteEntry.addEventListener("click", () => void deleteRecord(selectedDate || entryDate.value));
+  deleteEntry.addEventListener("click", () => {
+    if (!selectedRecordId) {
+      status.textContent = "请先从右侧打开一条已有记录，再执行删除。";
+      return;
+    }
+    void deleteRecord(selectedRecordId);
+  });
 
   projectForm.addEventListener("submit", async (event) => {
     event.preventDefault();

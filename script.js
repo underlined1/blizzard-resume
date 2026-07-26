@@ -82,6 +82,7 @@ const checkinStreak = document.querySelector("[data-checkin-streak]");
 const checkinTotal = document.querySelector("[data-checkin-total]");
 const monthCheckinCount = document.querySelector("[data-month-checkin-count]");
 const calendarStorageKey = "blizzard-calendar-checkins-v1";
+const publicReadOnly = document.documentElement.dataset.checkinsMode === "public";
 
 if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinButton && dailyStatus) {
   const getToday = () => {
@@ -99,10 +100,12 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   const displayDate = (date) => new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(date);
 
   let checkins = {};
-  try {
-    checkins = JSON.parse(localStorage.getItem(calendarStorageKey) || "{}") || {};
-  } catch {
-    checkins = {};
+  if (!publicReadOnly) {
+    try {
+      checkins = JSON.parse(localStorage.getItem(calendarStorageKey) || "{}") || {};
+    } catch {
+      checkins = {};
+    }
   }
 
   let selectedDate = getToday();
@@ -143,14 +146,18 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     const key = dateKey(selectedDate);
     const record = checkins[key] || {};
     const future = isFuture(selectedDate);
-    const cloudLocked = document.documentElement.dataset.cloudEditing === "locked";
+    const cloudLocked = publicReadOnly || document.documentElement.dataset.cloudEditing === "locked";
     selectedDateLabel.textContent = displayDate(selectedDate);
     dailyNote.value = record.note || "";
     dailyNote.disabled = cloudLocked;
     saveDailyNoteButton.disabled = cloudLocked;
     checkinButton.disabled = future || cloudLocked;
     checkinButton.textContent = cloudLocked ? "登录后同步并打卡" : future ? "未来日期暂不能打卡" : record.checked ? "撤销打卡 ↺" : sameDay(selectedDate, getToday()) ? "今日打卡 ✓" : "为这天打卡 ✓";
-    dailyStatus.textContent = cloudLocked
+    dailyStatus.textContent = publicReadOnly
+      ? (record.note || record.checked
+        ? "这是公开只读记录：你可以浏览日期与内容，但无法修改。"
+        : "这一天没有公开记录；点击其他日期查看。")
+      : cloudLocked
       ? "登录后即可查看和编辑自己的云端学习记录。"
       : future
       ? "未来日期可以先写计划，到了当天再打卡。"
@@ -218,6 +225,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   window.addEventListener("blizzard:cloud-access-change", renderCalendar);
 
   saveDailyNoteButton?.addEventListener("click", () => {
+    if (publicReadOnly) return;
     const key = dateKey(selectedDate);
     const previous = checkins[key] || {};
     const note = dailyNote.value.trim();
@@ -232,7 +240,8 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     }
   });
 
-  checkinButton.addEventListener("click", () => {
+  checkinButton?.addEventListener("click", () => {
+    if (publicReadOnly) return;
     if (isFuture(selectedDate)) return;
     const key = dateKey(selectedDate);
     const previous = checkins[key] || {};
@@ -248,7 +257,46 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     }
   });
 
+  const loadPublicCheckins = async () => {
+    const config = window.SUPABASE_CONFIG || {};
+    const isConfigured = window.supabase?.createClient
+      && typeof config.url === "string"
+      && config.url.startsWith("https://")
+      && typeof config.publishableKey === "string"
+      && config.publishableKey.length > 20;
+    if (!isConfigured) {
+      dailyStatus.textContent = "公开记录暂时无法加载。";
+      return;
+    }
+
+    dailyStatus.textContent = "正在加载公开打卡记录…";
+    const client = window.supabase.createClient(config.url, config.publishableKey);
+    const { data, error } = await client.rpc("get_public_checkins");
+    if (error) {
+      dailyStatus.textContent = "公开记录暂时无法加载，请稍后再试。";
+      return;
+    }
+
+    const rows = Array.isArray(data) ? data : [];
+    checkins = rows.reduce((result, row) => {
+      if (typeof row.checkin_date !== "string") return result;
+      result[row.checkin_date] = {
+        note: typeof row.note === "string" ? row.note : "",
+        checked: Boolean(row.checked),
+        updatedAt: row.updated_at || ""
+      };
+      return result;
+    }, {});
+
+    if (rows[0]?.checkin_date) {
+      selectedDate = fromDateKey(rows[0].checkin_date);
+      visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    }
+    renderCalendar();
+  };
+
   renderCalendar();
+  if (publicReadOnly) void loadPublicCheckins();
 }
 
 const poemText = document.querySelector("[data-poem-text]");

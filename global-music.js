@@ -301,6 +301,14 @@
       currentMain.replaceWith(document.importNode(nextMain, true));
       currentFooter.replaceWith(document.importNode(nextFooter, true));
       document.body.className = nextDocument.body.className;
+      // The music router keeps audio alive between pages, so it must also carry
+      // page-level data flags. The public check-in page relies on this flag to
+      // load the read-only Supabase feed instead of a visitor's empty cache.
+      if (nextDocument.body.dataset.checkinsMode) {
+        document.body.dataset.checkinsMode = nextDocument.body.dataset.checkinsMode;
+      } else {
+        delete document.body.dataset.checkinsMode;
+      }
       document.title = nextDocument.title;
       const nextDescription = nextDocument.querySelector('meta[name="description"]')?.getAttribute("content");
       const currentDescription = document.querySelector('meta[name="description"]');

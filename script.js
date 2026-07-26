@@ -257,7 +257,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     }
   });
 
-  const loadPublicCheckins = async () => {
+  const loadPublicCheckins = async (attempt = 0) => {
     const config = window.SUPABASE_CONFIG || {};
     const isConfigured = window.supabase?.createClient
       && typeof config.url === "string"
@@ -273,7 +273,12 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     const client = window.supabase.createClient(config.url, config.publishableKey);
     const { data, error } = await client.rpc("get_public_checkins");
     if (error) {
-      dailyStatus.textContent = "公开记录暂时无法加载，请稍后再试。";
+      if (attempt === 0) {
+        dailyStatus.textContent = "网络较慢，正在重新加载公开记录…";
+        window.setTimeout(() => { void loadPublicCheckins(1); }, 1200);
+      } else {
+        dailyStatus.textContent = "公开记录暂时无法加载，请刷新页面后重试。";
+      }
       return;
     }
 
@@ -296,7 +301,10 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   };
 
   renderCalendar();
-  if (publicReadOnly) void loadPublicCheckins();
+  if (publicReadOnly) {
+    void loadPublicCheckins();
+    window.addEventListener("online", () => { void loadPublicCheckins(); });
+  }
 }
 
 const poemText = document.querySelector("[data-poem-text]");

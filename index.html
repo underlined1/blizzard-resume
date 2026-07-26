@@ -83,12 +83,15 @@
         </section>
 
         <section class="section music-section reveal" aria-labelledby="music-title">
-          <div class="music-copy"><p class="section-kicker">MY SOUND CORNER</p><h2 id="music-title">让喜欢的歌，<br /><em>陪着这个角落。</em></h2><p>站长可在后台维护最多 10 首公开歌曲；每位来访者都能选择播放、切换下一首，并在浏览其他页面时延续聆听。</p></div>
+          <div class="music-copy"><p class="section-kicker">MY SOUND CORNER</p><h2 id="music-title">让喜欢的歌，<br /><em>陪着这个角落。</em></h2><p>站长可在后台维护最多 10 首公开歌曲；每位来访者都能选择播放、上一首或下一首，并在站内切换页面时延续聆听。</p></div>
           <div class="music-player-card">
             <div class="music-disc" aria-hidden="true"><span>❄</span></div>
             <p class="music-label" data-public-music-title>NOW PLAYING / 暂未设置</p>
             <audio class="music-player" controls preload="metadata" data-public-music-player aria-label="公开音乐播放器"></audio>
-            <button class="music-next-button" type="button" data-public-music-next>下一首 <span aria-hidden="true">→</span></button>
+            <div class="music-track-controls" aria-label="歌单切换控制">
+              <button class="music-track-button" type="button" data-public-music-previous><span aria-hidden="true">←</span> 上一首</button>
+              <button class="music-track-button music-track-button-next" type="button" data-public-music-next>下一首 <span aria-hidden="true">→</span></button>
+            </div>
             <p class="music-status" data-public-music-status>正在加载公开音乐…</p>
             <p class="music-note">音乐由站长在管理后台上传；浏览器需要你点击播放，才会发出声音。</p>
           </div>

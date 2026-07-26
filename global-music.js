@@ -1,6 +1,9 @@
 (() => {
+  if (window.__blizzardGlobalMusic) return;
+  window.__blizzardGlobalMusic = true;
+
   const config = window.SUPABASE_CONFIG || {};
-  const stateKey = "blizzard-public-playlist-v1";
+  const stateKey = "blizzard-public-playlist-v2";
   const canUseCloud = window.supabase?.createClient
     && typeof config.url === "string"
     && config.url.startsWith("https://")
@@ -10,30 +13,32 @@
   if (!canUseCloud) return;
 
   const client = window.supabase.createClient(config.url, config.publishableKey);
-  const homePlayer = document.querySelector("[data-public-music-player]");
-  const homeTitle = document.querySelector("[data-public-music-title]");
-  const homeStatus = document.querySelector("[data-public-music-status]");
-  const homeNext = document.querySelector("[data-public-music-next]");
-  const player = homePlayer || new Audio();
+  const initialPlayer = document.querySelector("[data-public-music-player]");
+  const player = initialPlayer || new Audio();
   const state = readState();
+  let homeTitle = null;
+  let homeStatus = null;
+  let homePrevious = null;
+  let homeNext = null;
   let tracks = [];
   let currentIndex = -1;
   let isLeaving = false;
+  let isNavigating = false;
   let lastStoredAt = 0;
   let resumeRequested = false;
+
+  player.preload = "metadata";
+  player.loop = false;
+  if (Number.isFinite(state.volume)) player.volume = Math.min(1, Math.max(0, state.volume));
 
   const dock = buildDock();
   const dockTitle = dock.querySelector("[data-global-music-title]");
   const dockStatus = dock.querySelector("[data-global-music-status]");
   const dockPeek = dock.querySelector("[data-global-music-peek]");
   const dockToggle = dock.querySelector("[data-global-music-toggle]");
+  const dockPrevious = dock.querySelector("[data-global-music-previous]");
   const dockNext = dock.querySelector("[data-global-music-next]");
   const dockMute = dock.querySelector("[data-global-music-mute]");
-
-  player.preload = "metadata";
-  // A track repeats until the visitor explicitly chooses another one.
-  player.loop = true;
-  if (Number.isFinite(state.volume)) player.volume = Math.min(1, Math.max(0, state.volume));
 
   function readState() {
     try {
@@ -55,7 +60,7 @@
         volume: player.volume
       }));
     } catch {
-      // Storage may be disabled by the visitor. Playback still works on this page.
+      // Playback still works when browser storage is unavailable.
     }
   }
 
@@ -75,6 +80,13 @@
 
     const panel = document.createElement("div");
     panel.className = "global-music-panel";
+
+    const previous = document.createElement("button");
+    previous.type = "button";
+    previous.className = "global-music-action";
+    previous.dataset.globalMusicPrevious = "";
+    previous.setAttribute("aria-label", "上一首");
+    previous.textContent = "上一首";
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -106,15 +118,49 @@
     mute.setAttribute("aria-label", "静音");
     mute.textContent = "静音";
 
-    panel.append(toggle, copy, next, mute);
+    panel.append(previous, toggle, copy, next, mute);
     element.append(peek, panel);
     document.body.append(element);
     return element;
   }
 
+  function bindPageControls() {
+    const pagePlayer = document.querySelector("[data-public-music-player]");
+    if (pagePlayer && pagePlayer !== player) {
+      player.className = pagePlayer.className;
+      player.setAttribute("controls", "");
+      player.setAttribute("aria-label", pagePlayer.getAttribute("aria-label") || "公开音乐播放器");
+      pagePlayer.replaceWith(player);
+    }
+    homeTitle = document.querySelector("[data-public-music-title]");
+    homeStatus = document.querySelector("[data-public-music-status]");
+    homePrevious = document.querySelector("[data-public-music-previous]");
+    homeNext = document.querySelector("[data-public-music-next]");
+    homePrevious?.addEventListener("click", () => chooseTrack(currentIndex - 1, { play: !player.paused, notice: "已切换到上一首。" }));
+    homeNext?.addEventListener("click", () => chooseTrack(currentIndex + 1, { play: !player.paused, notice: "已切换到下一首。" }));
+    if (tracks.length) renderTrack();
+  }
+
   function setMessage(message) {
-    if (dockStatus) dockStatus.textContent = message;
+    dockStatus.textContent = message;
     if (homeStatus) homeStatus.textContent = message;
+  }
+
+  function updateMediaSession(track) {
+    if (!("mediaSession" in navigator) || !("MediaMetadata" in window)) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title || "暴风雪的歌单",
+        artist: "暴风雪 · 个人网站",
+        album: "Snowfall playlist"
+      });
+      navigator.mediaSession.setActionHandler("play", () => requestPlay("音乐正在播放。"));
+      navigator.mediaSession.setActionHandler("pause", () => player.pause());
+      navigator.mediaSession.setActionHandler("previoustrack", () => chooseTrack(currentIndex - 1, { play: true, notice: "已切换到上一首。" }));
+      navigator.mediaSession.setActionHandler("nexttrack", () => chooseTrack(currentIndex + 1, { play: true, notice: "已切换到下一首。" }));
+    } catch {
+      // Media Session is optional and does not affect regular page controls.
+    }
   }
 
   function renderTrack() {
@@ -129,6 +175,7 @@
     dockMute.textContent = player.muted || player.volume === 0 ? "取消静音" : "静音";
     dockMute.setAttribute("aria-label", dockMute.textContent);
     dock.hidden = false;
+    updateMediaSession(track);
   }
 
   function setSource(track, resumeAt = 0) {
@@ -145,13 +192,14 @@
 
   function chooseTrack(index, options = {}) {
     if (!tracks.length) return;
+    const shouldPlay = options.play === true;
     currentIndex = (index + tracks.length) % tracks.length;
     const track = tracks[currentIndex];
     setSource(track, options.resumeAt || 0);
     renderTrack();
-    if (options.play) requestPlay(options.notice || "音乐正在播放。");
+    if (shouldPlay) requestPlay(options.notice || "音乐正在播放。");
     else setMessage(options.notice || `已选择第 ${currentIndex + 1} 首，点击播放开始聆听。`);
-    storeState(Boolean(options.play));
+    storeState(shouldPlay);
   }
 
   function requestPlay(notice) {
@@ -197,6 +245,79 @@
     });
   }
 
+  async function loadPageModules(nextDocument, destination) {
+    const protectedScripts = new Set(["supabase-config.js", "security.js", "global-music.js"]);
+    const sources = [...nextDocument.querySelectorAll("script[src]")]
+      .map((script) => script.getAttribute("src"))
+      .filter(Boolean)
+      .filter((source) => !source.startsWith("https://cdn.jsdelivr.net"))
+      .filter((source) => !protectedScripts.has(source.split("?")[0]));
+
+    for (const source of sources) {
+      const moduleUrl = new URL(source, destination);
+      moduleUrl.searchParams.set("blizzard-route", String(Date.now()));
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = moduleUrl.href;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.append(script);
+      });
+    }
+  }
+
+  function shouldUseSoftNavigation(event, link) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+    if (link.target || link.hasAttribute("download")) return false;
+    const destination = new URL(link.href, location.href);
+    if (destination.origin !== location.origin) return false;
+    if (!destination.pathname.endsWith(".html")) return false;
+    if (destination.pathname === location.pathname && destination.hash) return false;
+    return true;
+  }
+
+  async function navigateWithoutStoppingMusic(url, historyMode = "push") {
+    if (isNavigating) return;
+    const destination = new URL(url, location.href);
+    if (destination.href === location.href) return;
+    isNavigating = true;
+    storeState();
+
+    try {
+      const response = await fetch(destination.href, { headers: { "X-Requested-With": "BlizzardMusicRouter" } });
+      if (!response.ok) throw new Error("Navigation request failed");
+      const markup = await response.text();
+      const nextDocument = new DOMParser().parseFromString(markup, "text/html");
+      const nextMain = nextDocument.querySelector("main");
+      const nextHeader = nextDocument.querySelector(".site-header");
+      const nextFooter = nextDocument.querySelector(".site-footer");
+      const currentMain = document.querySelector("main");
+      const currentHeader = document.querySelector(".site-header");
+      const currentFooter = document.querySelector(".site-footer");
+      if (!nextMain || !nextHeader || !nextFooter || !currentMain || !currentHeader || !currentFooter) throw new Error("Navigation shell is incomplete");
+
+      currentHeader.replaceWith(document.importNode(nextHeader, true));
+      currentMain.replaceWith(document.importNode(nextMain, true));
+      currentFooter.replaceWith(document.importNode(nextFooter, true));
+      document.body.className = nextDocument.body.className;
+      document.title = nextDocument.title;
+      const nextDescription = nextDocument.querySelector('meta[name="description"]')?.getAttribute("content");
+      const currentDescription = document.querySelector('meta[name="description"]');
+      if (nextDescription && currentDescription) currentDescription.setAttribute("content", nextDescription);
+      if (historyMode === "push") history.pushState({ blizzardMusicRoute: true }, "", destination.href);
+      bindPageControls();
+      await loadPageModules(nextDocument, destination);
+      window.scrollTo(0, 0);
+      document.dispatchEvent(new CustomEvent("blizzard:page-ready", { detail: { url: destination.href } }));
+      if (!player.paused) setMessage("音乐正在播放。");
+    } catch {
+      window.location.assign(destination.href);
+    } finally {
+      isNavigating = false;
+    }
+  }
+
   player.addEventListener("play", () => {
     renderTrack();
     setMessage("音乐正在播放。");
@@ -220,10 +341,7 @@
     storeState();
   });
   player.addEventListener("ended", () => {
-    // Most browsers do not fire `ended` while `loop` is enabled. This fallback
-    // keeps the same track repeating on browsers that do.
-    player.currentTime = 0;
-    requestPlay("单曲循环中。 ");
+    chooseTrack(currentIndex + 1, { play: true, notice: "当前歌曲结束，正在播放下一首。" });
   });
   player.addEventListener("error", () => {
     setMessage("这首歌暂时无法播放，请切换下一首或稍后重试。");
@@ -243,15 +361,23 @@
     }
   });
   dockToggle.addEventListener("click", togglePlayback);
+  dockPrevious.addEventListener("click", () => chooseTrack(currentIndex - 1, { play: !player.paused, notice: "已切换到上一首。" }));
   dockNext.addEventListener("click", () => chooseTrack(currentIndex + 1, { play: !player.paused, notice: "已切换到下一首。" }));
   dockMute.addEventListener("click", () => { player.muted = !player.muted; });
-  if (homeNext) homeNext.addEventListener("click", () => chooseTrack(currentIndex + 1, { play: !player.paused, notice: "已切换到下一首。" }));
 
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("a[href]");
+    if (!link || !shouldUseSoftNavigation(event, link)) return;
+    event.preventDefault();
+    void navigateWithoutStoppingMusic(link.href);
+  });
+  window.addEventListener("popstate", () => { void navigateWithoutStoppingMusic(location.href, "pop"); });
   window.addEventListener("pagehide", () => {
     isLeaving = true;
     storeState(!player.paused);
   });
   window.addEventListener("pageshow", () => { isLeaving = false; });
 
+  bindPageControls();
   void loadPlaylist();
 })();

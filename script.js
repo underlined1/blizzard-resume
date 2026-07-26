@@ -82,7 +82,7 @@ const checkinStreak = document.querySelector("[data-checkin-streak]");
 const checkinTotal = document.querySelector("[data-checkin-total]");
 const monthCheckinCount = document.querySelector("[data-month-checkin-count]");
 const calendarStorageKey = "blizzard-calendar-checkins-v1";
-const publicReadOnly = document.documentElement.dataset.checkinsMode === "public";
+const publicReadOnly = document.body?.dataset.checkinsMode === "public";
 
 if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinButton && dailyStatus) {
   const getToday = () => {

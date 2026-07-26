@@ -106,6 +106,7 @@
   let passwordRecoveryActive = false;
   const archivePageSize = 12;
   let archiveVisibleCount = archivePageSize;
+  let pendingDeleteId = null;
 
   const hasAdminAccess = async () => {
     const { data, error } = await client.rpc("is_site_admin");
@@ -211,17 +212,31 @@
 
     const actions = document.createElement("div");
     actions.className = "admin-entry-card-actions";
-    const edit = document.createElement("button");
-    edit.className = "utility-button";
-    edit.type = "button";
-    edit.dataset.adminEditDate = record.checkin_date;
-    edit.textContent = "编辑";
-    const remove = document.createElement("button");
-    remove.className = "utility-button";
-    remove.type = "button";
-    remove.dataset.adminDeleteId = record.id;
-    remove.textContent = "删除";
-    actions.append(edit, remove);
+    if (pendingDeleteId === record.id) {
+      const cancel = document.createElement("button");
+      cancel.className = "utility-button";
+      cancel.type = "button";
+      cancel.dataset.adminCancelDeleteId = record.id;
+      cancel.textContent = "取消";
+      const confirm = document.createElement("button");
+      confirm.className = "utility-button admin-danger-button";
+      confirm.type = "button";
+      confirm.dataset.adminConfirmDeleteId = record.id;
+      confirm.textContent = "确认删除";
+      actions.append(cancel, confirm);
+    } else {
+      const edit = document.createElement("button");
+      edit.className = "utility-button";
+      edit.type = "button";
+      edit.dataset.adminEditDate = record.checkin_date;
+      edit.textContent = "编辑";
+      const remove = document.createElement("button");
+      remove.className = "utility-button";
+      remove.type = "button";
+      remove.dataset.adminDeleteId = record.id;
+      remove.textContent = "删除";
+      actions.append(edit, remove);
+    }
     article.append(top, note, actions);
     return article;
   };
@@ -594,11 +609,7 @@
       showDeleteFeedback("error", "删除未开始：找不到这条记录。请刷新页面后重试。");
       return;
     }
-    const confirmed = window.confirm(`确定删除 ${formatDate(record.checkin_date)} 的记录吗？删除后无法恢复。`);
-    if (!confirmed) {
-      showDeleteFeedback("info", "已取消删除，这条记录没有被修改。");
-      return;
-    }
+    pendingDeleteId = null;
     status.textContent = "正在删除记录…";
     showDeleteFeedback("pending", `正在请求删除 ${formatDate(record.checkin_date)} 的云端记录…`);
     const { data, error } = await client
@@ -609,6 +620,7 @@
     if (error) {
       status.textContent = `删除失败：${error.message}`;
       showDeleteFeedback("error", `Supabase 拒绝删除：${error.message}${error.code ? `（代码 ${error.code}）` : ""}`);
+      renderRecords();
       return;
     }
     if (!data?.some((item) => item.id === record.id)) {
@@ -621,6 +633,17 @@
     await fetchRecords();
     status.textContent = "记录已从云端删除。";
     showDeleteFeedback("success", `${formatDate(record.checkin_date)} 的记录已从 Supabase 云端删除。`);
+  };
+
+  const requestRecordDeletion = (recordId) => {
+    const record = records.find((item) => item.id === recordId);
+    if (!record) {
+      showDeleteFeedback("error", "找不到这条记录。请刷新页面后再试。");
+      return;
+    }
+    pendingDeleteId = recordId;
+    showDeleteFeedback("info", `请确认删除 ${formatDate(record.checkin_date)} 的记录；删除后无法恢复。`);
+    renderRecords();
   };
 
   const activateSession = async (session) => {
@@ -766,8 +789,16 @@
   entryList.addEventListener("click", (event) => {
     const edit = event.target.closest("[data-admin-edit-date]");
     const remove = event.target.closest("[data-admin-delete-id]");
+    const confirm = event.target.closest("[data-admin-confirm-delete-id]");
+    const cancel = event.target.closest("[data-admin-cancel-delete-id]");
     if (edit) editRecord(edit.dataset.adminEditDate);
-    if (remove) void deleteRecord(remove.dataset.adminDeleteId);
+    if (remove) requestRecordDeletion(remove.dataset.adminDeleteId);
+    if (confirm) void deleteRecord(confirm.dataset.adminConfirmDeleteId);
+    if (cancel) {
+      pendingDeleteId = null;
+      showDeleteFeedback("info", "已取消删除，这条记录没有被修改。");
+      renderRecords();
+    }
   });
 
   entryNote?.addEventListener("input", updateEntryNoteCount);

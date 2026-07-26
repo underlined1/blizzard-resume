@@ -25,11 +25,14 @@
   const dock = buildDock();
   const dockTitle = dock.querySelector("[data-global-music-title]");
   const dockStatus = dock.querySelector("[data-global-music-status]");
+  const dockPeek = dock.querySelector("[data-global-music-peek]");
   const dockToggle = dock.querySelector("[data-global-music-toggle]");
   const dockNext = dock.querySelector("[data-global-music-next]");
   const dockMute = dock.querySelector("[data-global-music-mute]");
 
   player.preload = "metadata";
+  // A track repeats until the visitor explicitly chooses another one.
+  player.loop = true;
   if (Number.isFinite(state.volume)) player.volume = Math.min(1, Math.max(0, state.volume));
 
   function readState() {
@@ -62,6 +65,17 @@
     element.hidden = true;
     element.setAttribute("aria-label", "全站音乐播放器");
 
+    const peek = document.createElement("button");
+    peek.type = "button";
+    peek.className = "global-music-peek";
+    peek.dataset.globalMusicPeek = "";
+    peek.setAttribute("aria-label", "展开音乐播放器");
+    peek.setAttribute("aria-expanded", "false");
+    peek.textContent = "♫";
+
+    const panel = document.createElement("div");
+    panel.className = "global-music-panel";
+
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "global-music-toggle";
@@ -92,7 +106,8 @@
     mute.setAttribute("aria-label", "静音");
     mute.textContent = "静音";
 
-    element.append(toggle, copy, next, mute);
+    panel.append(toggle, copy, next, mute);
+    element.append(peek, panel);
     document.body.append(element);
     return element;
   }
@@ -113,7 +128,7 @@
     dockToggle.setAttribute("aria-label", player.paused ? "播放音乐" : "暂停音乐");
     dockMute.textContent = player.muted || player.volume === 0 ? "取消静音" : "静音";
     dockMute.setAttribute("aria-label", dockMute.textContent);
-    if (!homePlayer) dock.hidden = false;
+    dock.hidden = false;
   }
 
   function setSource(track, resumeAt = 0) {
@@ -205,17 +220,28 @@
     storeState();
   });
   player.addEventListener("ended", () => {
-    if (tracks.length > 1) chooseTrack(currentIndex + 1, { play: true, notice: "正在播放下一首。" });
-    else {
-      player.currentTime = 0;
-      storeState(false);
-      setMessage("这一首播放完了。点击播放键可再听一次。");
-    }
+    // Most browsers do not fire `ended` while `loop` is enabled. This fallback
+    // keeps the same track repeating on browsers that do.
+    player.currentTime = 0;
+    requestPlay("单曲循环中。 ");
   });
   player.addEventListener("error", () => {
     setMessage("这首歌暂时无法播放，请切换下一首或稍后重试。");
   });
 
+  dockPeek.addEventListener("click", () => {
+    const willOpen = !dock.classList.contains("is-open");
+    dock.classList.toggle("is-open", willOpen);
+    dockPeek.setAttribute("aria-expanded", String(willOpen));
+    dockPeek.setAttribute("aria-label", willOpen ? "收起音乐播放器" : "展开音乐播放器");
+  });
+  dock.addEventListener("mouseleave", () => {
+    if (!dock.matches(":focus-within")) {
+      dock.classList.remove("is-open");
+      dockPeek.setAttribute("aria-expanded", "false");
+      dockPeek.setAttribute("aria-label", "展开音乐播放器");
+    }
+  });
   dockToggle.addEventListener("click", togglePlayback);
   dockNext.addEventListener("click", () => chooseTrack(currentIndex + 1, { play: !player.paused, notice: "已切换到下一首。" }));
   dockMute.addEventListener("click", () => { player.muted = !player.muted; });

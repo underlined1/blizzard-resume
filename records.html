@@ -26,7 +26,7 @@
       </header>
 
       <main id="main-content" class="page-main records-main">
-        <section class="page-intro reveal" aria-labelledby="records-title"><p class="section-kicker">03 / STUDY &amp; WORK LOG</p><h1 id="records-title">把每一天，<br /><em>记成可回望的片段。</em></h1><p>这是属于自己的学习与工作地图。登录后，打卡和笔记会安全同步到云端；换设备时，也能继续写下去。</p></section>
+        <section class="page-intro reveal" aria-labelledby="records-title"><p class="section-kicker">03 / STUDY &amp; WORK LOG</p><h1 id="records-title">把每一天，<br /><em>记成可回望的片段。</em></h1></section>
 
         <section class="poetry-banner reveal" aria-labelledby="poem-title">
           <div><p class="section-kicker">DAILY VERSE</p><h2 id="poem-title">给今天一句古诗。</h2></div>
@@ -35,7 +35,7 @@
         </section>
 
         <section class="record-section calendar-records reveal delay-1" aria-labelledby="calendar-title">
-          <div class="record-heading"><div><p class="section-kicker">DAILY CHECK-IN</p><h2 id="calendar-title">把努力，<br />落在每一天。</h2></div><p class="record-hint">点选日期，打卡并写下当天的学习或工作</p></div>
+          <div class="record-heading"><div><p class="section-kicker">DAILY CHECK-IN</p><h2 id="calendar-title">把努力，<br />落在每一天。</h2></div></div>
 
           <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
             <div class="cloud-sync-copy"><p class="section-kicker">PRIVATE CLOUD SYNC</p><h3 id="cloud-sync-title">你的记录，只属于你。</h3><p data-cloud-status>正在检查云端连接…</p></div>
@@ -86,18 +86,17 @@
 
             <aside class="daily-log-panel" aria-label="当日记录">
               <p class="section-kicker">TODAY'S NOTE</p>
-              <h3 data-selected-date>选择一天开始记录</h3>
+              <h3 data-selected-date>记录详情</h3>
               <div class="checkin-metrics" aria-label="打卡统计">
                 <div><strong data-checkin-streak>0</strong><span>连续打卡</span></div>
                 <div><strong data-checkin-total>0</strong><span>累计打卡</span></div>
               </div>
               <label class="daily-note-label" for="daily-note">今天做了什么？</label>
-              <textarea id="daily-note" data-daily-note rows="7" maxlength="4000" placeholder="可以记录今天的学习、工作、健身、收获、问题和明天计划；每一天最多 4000 字。"></textarea>
+              <textarea id="daily-note" data-daily-note rows="7" maxlength="4000" placeholder="暂无记录"></textarea>
               <div class="daily-actions"><button class="utility-button" type="button" data-save-daily-note>保存文字</button><button class="button button-primary" type="button" data-checkin-button>今日打卡 <span aria-hidden="true">✓</span></button></div>
               <p class="daily-status" data-daily-status aria-live="polite">每天的积累，都会留在这张日历上。</p>
             </aside>
           </div>
-          <p class="record-footnote">登录后，打卡和文字记录会通过加密连接保存至你的 Supabase 数据库；未登录时，内容只保存在当前浏览器，不会上传。</p>
         </section>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>WRITE IT DOWN.</span><a href="index.html">BACK HOME →</a></footer>

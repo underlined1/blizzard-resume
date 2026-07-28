@@ -29,11 +29,10 @@
         <section class="page-intro admin-intro reveal" aria-labelledby="admin-title">
           <p class="section-kicker">PRIVATE ADMIN / 04</p>
           <h1 id="admin-title">把每一次打卡，<br /><em>认真写进后台。</em></h1>
-          <p>这里是你的个人管理区。用自己的邮箱登录后，可以管理所有学习与工作记录；每一条只会保存到你的云端账户。</p>
         </section>
 
         <section class="admin-auth-panel reveal" data-admin-login-panel aria-labelledby="admin-login-title">
-          <div><p class="section-kicker">OWNER ACCESS</p><h2 id="admin-login-title">进入管理后台</h2><p data-admin-login-status>仅限站长邮箱使用账号和密码进入个人管理区。</p></div>
+          <div><p class="section-kicker">OWNER ACCESS</p><h2 id="admin-login-title">进入管理后台</h2><p data-admin-login-status aria-live="polite"></p></div>
           <form class="admin-login-form" data-admin-login-form>
             <label class="sr-only" for="admin-login-email">登录邮箱</label>
             <input id="admin-login-email" data-admin-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
@@ -59,7 +58,7 @@
           </form>
 
           <section class="admin-music-card" aria-labelledby="admin-music-title">
-            <div><p class="section-kicker">PUBLIC PLAYLIST</p><h3 id="admin-music-title">管理全站歌单</h3><p>最多保存 10 首公开歌曲；访客可在首页和其他页面连续收听。</p></div>
+            <div><p class="section-kicker">PUBLIC PLAYLIST</p><h3 id="admin-music-title">管理全站歌单</h3></div>
             <form class="admin-music-form" data-admin-music-form>
               <input data-admin-music-title type="text" maxlength="80" placeholder="歌曲名称（可选）" />
               <input data-admin-music-file type="file" accept="audio/*" />
@@ -76,7 +75,6 @@
               <form data-admin-entry-form>
                 <label class="admin-field-label" for="admin-entry-date">打卡日期</label>
                 <input id="admin-entry-date" data-admin-entry-date type="date" required />
-                <p class="admin-field-note">可选择今天或任意过去日期。切换到没有记录的日期会新建一条云端记录；只有打开已有日期时才会更新那一天。</p>
                 <label class="admin-field-label" for="admin-entry-note">学习 / 工作内容</label>
                 <textarea id="admin-entry-note" data-admin-entry-note rows="12" maxlength="4000" placeholder="可以详细记录：今天做了什么、遇到了什么问题、学到了什么、明天准备怎么继续。每一天最多 4000 字。"></textarea>
                 <p class="admin-entry-note-count" data-admin-entry-note-count>0 / 4000 字</p>
@@ -103,7 +101,7 @@
           </div>
 
           <section class="admin-project-card" aria-labelledby="admin-project-title">
-            <div class="admin-project-heading"><div><p class="section-kicker">PUBLIC WORKS</p><h3 id="admin-project-title">发布简单作品</h3><p>写标题和简介即可发布；也可附上 GitHub / 在线链接，或上传一张图片、一个 PDF。</p></div><span class="admin-record-count" data-admin-project-count>0 件</span></div>
+            <div class="admin-project-heading"><div><p class="section-kicker">PUBLIC WORKS</p><h3 id="admin-project-title">发布简单作品</h3></div><span class="admin-record-count" data-admin-project-count>0 件</span></div>
             <form class="admin-project-form" data-admin-project-form>
               <label class="sr-only" for="admin-project-name">作品标题</label>
               <input id="admin-project-name" data-admin-project-name type="text" maxlength="100" placeholder="作品标题，例如：Python 数据分析报告" required />
@@ -120,7 +118,7 @@
           </section>
 
           <section class="admin-interest-card" aria-labelledby="admin-interest-title">
-            <div class="admin-project-heading"><div><p class="section-kicker">ABOUT PAGE CONTENT</p><h3 id="admin-interest-title">设置音乐与阅读介绍</h3><p>首页点击“音乐”或“阅读”后会进入关于页；在这里修改两张介绍卡片的标题、正文和一句话。</p></div></div>
+            <div class="admin-project-heading"><div><p class="section-kicker">ABOUT PAGE CONTENT</p><h3 id="admin-interest-title">设置音乐与阅读介绍</h3></div></div>
             <form class="admin-interest-form" data-admin-interest-form>
               <label class="sr-only" for="admin-interest-key">内容板块</label>
               <select id="admin-interest-key" data-admin-interest-key><option value="music">音乐介绍</option><option value="reading">阅读介绍</option></select>

@@ -179,7 +179,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 
 .music-section { padding: 138px 0; display: grid; grid-template-columns: 1fr .83fr; gap: 74px; align-items: center; }
 .music-copy h2 { margin: 16px 0 22px; font-size: clamp(42px, 5.4vw, 76px); }
-.music-copy > p:last-child { max-width: 420px; margin: 0; color: #52636e; font-size: 14px; line-height: 1.8; }
 .music-player-card { position: relative; min-height: 365px; padding: 29px; background: var(--lime); border: 1px solid var(--ink); box-shadow: 11px 11px 0 var(--ink); display: flex; flex-direction: column; overflow: hidden; }
 .music-player-card::after { content: "PLAY / PAUSE / REPEAT"; position: absolute; right: -28px; bottom: 17px; color: rgba(16,38,51,.18); font: 800 25px var(--mono); letter-spacing: -.08em; transform: rotate(-90deg); transform-origin: right bottom; }
 .music-disc { width: 100px; height: 100px; display: grid; place-items: center; border: 13px solid var(--ink); border-radius: 50%; background: var(--coral); box-shadow: inset 0 0 0 5px var(--paper); }
@@ -192,7 +191,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .music-upload input { width: 1px; height: 1px; opacity: 0; position: absolute; }
 .music-upload b { font-size: 19px; font-weight: 400; }
 .music-status { position: relative; z-index: 1; min-height: 19px; margin: 13px 0 0; font-size: 12px; line-height: 1.5; }
-.music-note { position: relative; z-index: 1; margin: 6px 0 0; color: #356178; font: 10px var(--mono); line-height: 1.6; }
 
 .records-main { padding-bottom: 150px; }
 .poetry-banner { padding: 35px; display: grid; grid-template-columns: .75fr 1.35fr auto; align-items: center; gap: 36px; background: var(--ink); color: var(--paper); box-shadow: 10px 10px 0 var(--violet); }
@@ -226,7 +224,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .add-entry { width: 100%; padding: 17px; color: var(--ink); border-color: var(--ink); background: transparent; }
 .add-entry:hover { background: var(--ink); color: var(--paper); }
 .add-entry span { margin-right: 7px; font-size: 17px; }
-.record-footnote { margin: 15px 0 0; color: var(--muted); font: 10px var(--mono); line-height: 1.7; }
 
 @media (max-width: 840px) {
   .hobby-section { padding: 82px 0; }.hobby-grid { grid-template-columns: 1fr 1fr; }.hobby-card { min-height: 245px; padding: 19px; }.hobby-card i { right: 16px; top: 30px; }
@@ -336,7 +333,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 @media (max-width: 480px) { .admin-music-list { grid-template-columns: 1fr; }.admin-music-entry { min-height: 64px; }.music-track-controls { gap: 8px; }.music-track-button { min-height: 48px; font-size: 12px; } }
 
 /* Admin-published works */
-.admin-field-note { margin: 9px 0 0; color: #405460; font: 10px/1.65 var(--mono); }
 .admin-project-card { margin-top: 30px; padding: 29px; background: #e8e4d9; border: 1px solid var(--ink); box-shadow: 8px 8px 0 var(--coral); }
 .admin-project-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .admin-project-heading h3 { margin: 9px 0; font-size: clamp(25px, 2.8vw, 38px); letter-spacing: -.065em; }

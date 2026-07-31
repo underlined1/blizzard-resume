@@ -199,7 +199,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .poetry-banner blockquote { margin: 0; padding-left: 30px; border-left: 1px solid #58707d; }
 .poetry-banner blockquote p { margin: 0 0 10px; font: clamp(20px, 2.2vw, 29px) Georgia, "Noto Serif SC", serif; line-height: 1.5; }
 .poetry-banner cite { color: #b5c8d1; font: 11px var(--mono); font-style: normal; }
-.poetry-banner [data-poem-status] { display: block; margin-top: 9px; color: #8298a3; font: 10px/1.5 var(--mono); }
 .poem-button, .utility-button, .add-entry { border: 1px solid var(--ink); background: transparent; font: 600 11px var(--mono); transition: background .2s ease, color .2s ease, transform .2s ease; }
 .poem-button { padding: 11px 13px; border-color: var(--lime); color: var(--lime); white-space: nowrap; }
 .poem-button:hover { background: var(--lime); color: var(--ink); transform: translateY(-2px); }

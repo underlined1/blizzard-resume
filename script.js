@@ -310,7 +310,6 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
 const poemText = document.querySelector("[data-poem-text]");
 const poemSource = document.querySelector("[data-poem-source]");
 const poemButton = document.querySelector("[data-shuffle-poem]");
-const poemStatus = document.querySelector("[data-poem-status]");
 
 if (poemText && poemSource && poemButton) {
   const fallbackPoems = [
@@ -387,13 +386,10 @@ if (poemText && poemSource && poemButton) {
   };
 
   const renderNextPoem = () => {
-    const { poemIndex, shownInCycle } = takeNextPoemIndex();
+    const { poemIndex } = takeNextPoemIndex();
     const [text, source] = poems[poemIndex];
     poemText.textContent = `「${text}」`;
     poemSource.textContent = `— ${source}`;
-    if (poemStatus) {
-      poemStatus.textContent = `本轮第 ${shownInCycle} / ${poems.length} 句 · 已为这台设备保存浏览记录`;
-    }
   };
 
   renderNextPoem();

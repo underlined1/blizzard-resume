@@ -310,6 +310,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
 const poemText = document.querySelector("[data-poem-text]");
 const poemSource = document.querySelector("[data-poem-source]");
 const poemButton = document.querySelector("[data-shuffle-poem]");
+const poemStatus = document.querySelector("[data-poem-status]");
 
 if (poemText && poemSource && poemButton) {
   const fallbackPoems = [
@@ -318,14 +319,83 @@ if (poemText && poemSource && poemButton) {
     ["不经一番寒彻骨，怎得梅花扑鼻香。", "黄檗《上堂开示颂》"],
     ["会当凌绝顶，一览众山小。", "杜甫《望岳》"]
   ];
-  const poems = Array.isArray(window.BLIZZARD_POEMS) && window.BLIZZARD_POEMS.length >= 50
+  const poemCandidates = Array.isArray(window.BLIZZARD_POEMS) && window.BLIZZARD_POEMS.length >= 50
     ? window.BLIZZARD_POEMS
     : fallbackPoems;
-  let poemIndex = 0;
-
-  poemButton.addEventListener("click", () => {
-    poemIndex = (poemIndex + 1) % poems.length;
-    poemText.textContent = `「${poems[poemIndex][0]}」`;
-    poemSource.textContent = `— ${poems[poemIndex][1]}`;
+  const seenPoemTexts = new Set();
+  const poems = poemCandidates.filter(([text]) => {
+    const normalizedText = String(text).trim();
+    if (seenPoemTexts.has(normalizedText)) return false;
+    seenPoemTexts.add(normalizedText);
+    return true;
   });
+  const poemRotationStorageKey = "blizzard-poem-rotation-v2";
+
+  const shuffle = (items) => {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+    return shuffled;
+  };
+
+  const readRotation = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(poemRotationStorageKey) || "{}");
+      if (!Array.isArray(saved.remaining) || saved.remaining.some((index) => !Number.isInteger(index) || index < 0 || index >= poems.length)) {
+        return { remaining: [], lastIndex: null, shownInCycle: 0 };
+      }
+      return {
+        remaining: saved.remaining,
+        lastIndex: Number.isInteger(saved.lastIndex) ? saved.lastIndex : null,
+        shownInCycle: Number.isInteger(saved.shownInCycle) ? saved.shownInCycle : 0
+      };
+    } catch {
+      return { remaining: [], lastIndex: null, shownInCycle: 0 };
+    }
+  };
+
+  const saveRotation = (rotation) => {
+    try {
+      localStorage.setItem(poemRotationStorageKey, JSON.stringify(rotation));
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const takeNextPoemIndex = () => {
+    const rotation = readRotation();
+
+    if (!rotation.remaining.length) {
+      rotation.remaining = shuffle(Array.from({ length: poems.length }, (_, index) => index));
+      rotation.shownInCycle = 0;
+
+      // 新一轮开始时，也避免与上一轮最后一句紧挨着重复。
+      const nextPosition = rotation.remaining.length - 1;
+      if (rotation.remaining.length > 1 && rotation.remaining[nextPosition] === rotation.lastIndex) {
+        [rotation.remaining[nextPosition], rotation.remaining[0]] = [rotation.remaining[0], rotation.remaining[nextPosition]];
+      }
+    }
+
+    const poemIndex = rotation.remaining.pop();
+    rotation.lastIndex = poemIndex;
+    rotation.shownInCycle += 1;
+    saveRotation(rotation);
+    return { poemIndex, shownInCycle: rotation.shownInCycle };
+  };
+
+  const renderNextPoem = () => {
+    const { poemIndex, shownInCycle } = takeNextPoemIndex();
+    const [text, source] = poems[poemIndex];
+    poemText.textContent = `「${text}」`;
+    poemSource.textContent = `— ${source}`;
+    if (poemStatus) {
+      poemStatus.textContent = `本轮第 ${shownInCycle} / ${poems.length} 句 · 已为这台设备保存浏览记录`;
+    }
+  };
+
+  renderNextPoem();
+  poemButton.addEventListener("click", renderNextPoem);
 }

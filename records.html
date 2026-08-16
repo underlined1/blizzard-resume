@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=checkin-visibility-1" />
+    <link rel="stylesheet" href="styles.css?v=checkin-sticker-1" />
   </head>
   <body class="site-page page-records" data-checkins-mode="public">
     <a class="skip-link" href="#main-content">跳到主要内容</a>
@@ -91,7 +91,8 @@
                 <div><strong data-checkin-streak>0</strong><span>连续打卡</span></div>
                 <div><strong data-checkin-total>0</strong><span>累计打卡</span></div>
               </div>
-              <label class="daily-note-label" for="daily-note">今天做了什么？</label>
+              <label class="daily-note-label" data-daily-note-label for="daily-note">今天做了什么？</label>
+              <div class="hidden-checkin-sticker" data-hidden-checkin-sticker role="note" aria-label="这一天的内容已隐藏" hidden><span>已隐藏</span></div>
               <textarea id="daily-note" data-daily-note rows="7" maxlength="4000" placeholder="暂无记录"></textarea>
               <div class="daily-actions"><button class="utility-button" type="button" data-save-daily-note>保存文字</button><button class="button button-primary" type="button" data-checkin-button>今日打卡 <span aria-hidden="true">✓</span></button></div>
               <p class="daily-status" data-daily-status aria-live="polite">每天的积累，都会留在这张日历上。</p>
@@ -106,6 +107,6 @@
     <script src="security.js"></script>
     <script src="global-music.js?v=route-mode-1"></script>
     <script src="poem-library.js"></script>
-    <script src="script.js?v=public-records-4"></script>
+    <script src="script.js?v=public-records-5"></script>
   </body>
 </html>

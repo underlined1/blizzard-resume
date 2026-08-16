@@ -108,7 +108,9 @@
   let archiveVisibleCount = archivePageSize;
   let pendingDeleteId = null;
   let entryDeleteNotice = null;
+  let hiddenCheckinsConfigured = true;
   const calendarStorageKey = "blizzard-calendar-checkins-v1";
+  const hiddenCheckinsMigrationMessage = "隐藏功能尚未启用，请先在 Supabase SQL Editor 执行 supabase/hide-checkins-migration.sql。";
 
   const hasAdminAccess = async () => {
     const { data, error } = await client.rpc("is_site_admin");
@@ -223,10 +225,19 @@
     top.className = "admin-entry-card-top";
     const date = document.createElement("strong");
     date.textContent = formatDate(record.checkin_date);
+    const badges = document.createElement("div");
+    badges.className = "admin-entry-badges";
     const badge = document.createElement("span");
     badge.className = record.checked ? "admin-entry-badge is-checked" : "admin-entry-badge";
     badge.textContent = record.checked ? "已打卡" : "仅笔记";
-    top.append(date, badge);
+    badges.append(badge);
+    if (record.is_hidden) {
+      const hiddenBadge = document.createElement("span");
+      hiddenBadge.className = "admin-entry-badge is-hidden";
+      hiddenBadge.textContent = "已隐藏";
+      badges.append(hiddenBadge);
+    }
+    top.append(date, badges);
 
     const note = document.createElement("p");
     note.textContent = record.note || "这一天还没有文字记录。";
@@ -255,6 +266,12 @@
       confirm.textContent = "确认删除";
       actions.append(cancel, confirm);
     } else {
+      const visibility = document.createElement("button");
+      visibility.className = "utility-button";
+      visibility.type = "button";
+      visibility.dataset.adminToggleHiddenId = record.id;
+      visibility.textContent = record.is_hidden ? "公开" : "隐藏";
+      visibility.setAttribute("aria-label", `${record.is_hidden ? "公开" : "隐藏"}${formatDate(record.checkin_date)}的内容`);
       const edit = document.createElement("button");
       edit.className = "utility-button";
       edit.type = "button";
@@ -265,7 +282,7 @@
       remove.type = "button";
       remove.dataset.adminDeleteId = record.id;
       remove.textContent = "删除";
-      actions.append(edit, remove);
+      actions.append(visibility, edit, remove);
     }
     article.append(top, note);
     if (deleteNotice) article.append(deleteNotice);
@@ -619,19 +636,63 @@
   const fetchRecords = async () => {
     if (!activeUser) return;
     status.textContent = "正在读取你的云端记录…";
-    const { data, error } = await client
+    let { data, error } = await client
       .from("study_checkins")
-      .select("id, checkin_date, note, checked, updated_at")
+      .select("id, checkin_date, note, checked, is_hidden, updated_at")
       .eq("user_id", activeUser.id)
       .order("checkin_date", { ascending: false });
+    if (error?.code === "42703") {
+      hiddenCheckinsConfigured = false;
+      ({ data, error } = await client
+        .from("study_checkins")
+        .select("id, checkin_date, note, checked, updated_at")
+        .eq("user_id", activeUser.id)
+        .order("checkin_date", { ascending: false }));
+    } else {
+      hiddenCheckinsConfigured = true;
+    }
     if (error) {
       status.textContent = `读取记录失败：${error.message}`;
       return;
     }
-    records = data || [];
+    records = (data || []).map((record) => ({ ...record, is_hidden: Boolean(record.is_hidden) }));
     archiveVisibleCount = archivePageSize;
     renderRecords();
-    status.textContent = "云端记录已加载。";
+    status.textContent = hiddenCheckinsConfigured ? "云端记录已加载。" : `云端记录已加载。${hiddenCheckinsMigrationMessage}`;
+  };
+
+  const toggleRecordHidden = async (recordId) => {
+    const record = records.find((item) => item.id === recordId);
+    if (!activeUser || !record) {
+      status.textContent = "找不到要更新的记录，请刷新后重试。";
+      return;
+    }
+    if (!hiddenCheckinsConfigured) {
+      status.textContent = hiddenCheckinsMigrationMessage;
+      return;
+    }
+
+    const nextHidden = !record.is_hidden;
+    status.textContent = nextHidden ? "正在隐藏这一天的内容…" : "正在公开这一天的内容…";
+    const { error } = await client
+      .from("study_checkins")
+      .update({ is_hidden: nextHidden })
+      .eq("id", record.id)
+      .eq("user_id", activeUser.id);
+    if (error) {
+      if (error.code === "42703") {
+        hiddenCheckinsConfigured = false;
+        status.textContent = hiddenCheckinsMigrationMessage;
+        return;
+      }
+      status.textContent = `更新可见性失败：${error.message}`;
+      return;
+    }
+
+    await fetchRecords();
+    status.textContent = nextHidden
+      ? "已隐藏这一天的内容；前台刷新后只会显示“已隐藏”。"
+      : "已公开这一天的内容；前台刷新后即可看到原文。";
   };
 
   const deleteRecord = async (recordId) => {
@@ -832,10 +893,12 @@
   });
 
   entryList.addEventListener("click", (event) => {
+    const visibility = event.target.closest("[data-admin-toggle-hidden-id]");
     const edit = event.target.closest("[data-admin-edit-date]");
     const remove = event.target.closest("[data-admin-delete-id]");
     const confirm = event.target.closest("[data-admin-confirm-delete-id]");
     const cancel = event.target.closest("[data-admin-cancel-delete-id]");
+    if (visibility) void toggleRecordHidden(visibility.dataset.adminToggleHiddenId);
     if (edit) editRecord(edit.dataset.adminEditDate);
     if (remove) requestRecordDeletion(remove.dataset.adminDeleteId);
     if (confirm) void deleteRecord(confirm.dataset.adminConfirmDeleteId);

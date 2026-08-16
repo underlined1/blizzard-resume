@@ -147,14 +147,17 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     const record = checkins[key] || {};
     const future = isFuture(selectedDate);
     const cloudLocked = publicReadOnly || document.documentElement.dataset.cloudEditing === "locked";
+    const recordIsHidden = publicReadOnly && record.isHidden;
     selectedDateLabel.textContent = displayDate(selectedDate);
-    dailyNote.value = record.note || "";
+    dailyNote.value = recordIsHidden ? "已隐藏" : record.note || "";
     dailyNote.disabled = cloudLocked;
     saveDailyNoteButton.disabled = cloudLocked;
     checkinButton.disabled = future || cloudLocked;
     checkinButton.textContent = cloudLocked ? "登录后同步并打卡" : future ? "未来日期暂不能打卡" : record.checked ? "撤销打卡 ↺" : sameDay(selectedDate, getToday()) ? "今日打卡 ✓" : "为这天打卡 ✓";
     dailyStatus.textContent = publicReadOnly
-      ? (record.note || record.checked
+      ? (recordIsHidden
+        ? "这一天的内容已隐藏。"
+        : record.note || record.checked
         ? "这是公开只读记录：你可以浏览日期与内容，但无法修改。"
         : "这一天没有公开记录；点击其他日期查看。")
       : cloudLocked
@@ -191,12 +194,13 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
       button.dataset.date = key;
       button.textContent = day;
       button.setAttribute("role", "gridcell");
-      button.setAttribute("aria-label", `${displayDate(date)}${record?.checked ? "，已打卡" : ""}${record?.note ? "，已有记录" : ""}`);
+      button.setAttribute("aria-label", `${displayDate(date)}${record?.checked ? "，已打卡" : ""}${record?.isHidden ? "，内容已隐藏" : record?.note ? "，已有记录" : ""}`);
       button.setAttribute("aria-pressed", String(sameDay(date, selectedDate)));
       if (sameDay(date, getToday())) button.classList.add("is-today");
       if (sameDay(date, selectedDate)) button.classList.add("is-selected");
       if (record?.checked) button.classList.add("is-checked");
-      if (record?.note) button.classList.add("has-note");
+      if (record?.isHidden) button.classList.add("is-hidden");
+      if (record?.note && !record?.isHidden) button.classList.add("has-note");
       if (isFuture(date)) button.classList.add("is-future");
       calendarGrid.append(button);
     }
@@ -288,6 +292,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
       result[row.checkin_date] = {
         note: typeof row.note === "string" ? row.note : "",
         checked: Boolean(row.checked),
+        isHidden: Boolean(row.is_hidden),
         updatedAt: row.updated_at || ""
       };
       return result;

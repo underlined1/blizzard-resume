@@ -2,11 +2,14 @@
 -- publishing only the date, check-in status and note of site-admin accounts.
 begin;
 
-create or replace function public.get_public_checkins()
+drop function if exists public.get_public_checkins();
+
+create function public.get_public_checkins()
 returns table (
   checkin_date date,
   note text,
   checked boolean,
+  is_hidden boolean,
   updated_at timestamptz
 )
 language sql
@@ -16,8 +19,9 @@ set search_path = ''
 as $$
   select
     c.checkin_date,
-    c.note,
+    case when c.is_hidden then '已隐藏' else c.note end,
     c.checked,
+    c.is_hidden,
     c.updated_at
   from public.study_checkins as c
   where exists (

@@ -9,6 +9,7 @@ create table if not exists public.study_checkins (
   checkin_date date not null,
   note text not null default '' check (char_length(note) <= 1000),
   checked boolean not null default false,
+  is_hidden boolean not null default false,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   unique (user_id, checkin_date)

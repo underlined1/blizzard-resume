@@ -117,6 +117,16 @@
     return { allowed: data === true && !error, error };
   };
 
+  const loginErrorMessage = (error) => {
+    if (error?.code === "email_provider_disabled") {
+      return "邮箱登录已被关闭。请在 Supabase 的 Authentication → Providers → Email 中启用 Email；只关闭“允许新用户注册”。";
+    }
+    if (error?.code === "email_not_confirmed") {
+      return "该邮箱还未完成验证，请在邮箱中打开验证邮件后重试。";
+    }
+    return "登录失败：请检查邮箱和密码；若尚未设置密码，请点击忘记密码。";
+  };
+
   const isoToday = () => {
     const now = new Date();
     const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
@@ -798,7 +808,7 @@
     const { error } = await client.auth.signInWithPassword({ email, password });
     loginButton.disabled = false;
     loginStatus.textContent = error
-      ? "登录失败：请检查邮箱和密码；若尚未设置密码，请点击忘记密码。"
+      ? loginErrorMessage(error)
       : "登录成功，正在进入管理后台。";
   });
 
@@ -811,8 +821,10 @@
     }
     passwordRecoveryButton.disabled = true;
     loginStatus.textContent = "正在发送密码设置邮件…";
-    const redirectTo = new URL("records.html", window.location.href).href;
-    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+    const redirectTo = new URL(window.location.href);
+    redirectTo.search = "";
+    redirectTo.hash = "";
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: redirectTo.href });
     passwordRecoveryButton.disabled = false;
     loginStatus.textContent = error
       ? `发送失败：${error.message}`

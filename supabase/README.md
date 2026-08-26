@@ -10,7 +10,7 @@
 2. 执行 `admin-access.sql` 时，只在 Supabase SQL Editor 中把占位邮箱替换为自己的登录邮箱。不要把邮箱写回网站代码或提交到 GitHub。
 3. 在 **Authentication > URL Configuration** 中设置：
    - Site URL：`https://用户名.github.io/仓库名/`
-   - Redirect URLs：加入 `https://用户名.github.io/仓库名/records.html`
+   - Redirect URLs：加入 `https://用户名.github.io/仓库名/records.html` 和 `https://用户名.github.io/仓库名/admin`
 4. 在 **Authentication > Providers > Email** 关闭新用户注册，只保留你已有的账户。
 5. 在 **Connect / API Keys** 复制 Project URL 和 **Publishable key** 到 `../supabase-config.js`。绝不使用或提交 `secret` / `service_role` key。
 6. 首次设置密码或忘记密码时，在“记录”或“后台”页输入自己的邮箱，点击“忘记密码”，再通过邮件设置密码；之后可直接使用邮箱和密码登录。

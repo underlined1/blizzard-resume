@@ -84,7 +84,7 @@ const checkinStreak = document.querySelector("[data-checkin-streak]");
 const checkinTotal = document.querySelector("[data-checkin-total]");
 const monthCheckinCount = document.querySelector("[data-month-checkin-count]");
 const calendarStorageKey = "blizzard-calendar-checkins-v1";
-const publicReadOnly = document.body?.dataset.checkinsMode === "public";
+const privateGateMode = document.body.dataset.recordsAccess === "private-gate";
 
 if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinButton && dailyStatus) {
   const getToday = () => {
@@ -102,7 +102,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   const displayDate = (date) => new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(date);
 
   let checkins = {};
-  if (!publicReadOnly) {
+  if (!privateGateMode) {
     try {
       checkins = JSON.parse(localStorage.getItem(calendarStorageKey) || "{}") || {};
     } catch {
@@ -114,6 +114,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   let visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
 
   const saveCheckins = (change = null) => {
+    if (privateGateMode) return false;
     try {
       localStorage.setItem(calendarStorageKey, JSON.stringify(checkins));
       if (change) {
@@ -148,8 +149,8 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     const key = dateKey(selectedDate);
     const record = checkins[key] || {};
     const future = isFuture(selectedDate);
-    const cloudLocked = publicReadOnly || document.documentElement.dataset.cloudEditing === "locked";
-    const recordIsHidden = publicReadOnly && record.isHidden;
+    const cloudLocked = privateGateMode || document.documentElement.dataset.cloudEditing !== "enabled";
+    const recordIsHidden = Boolean(record.isHidden);
     selectedDateLabel.textContent = displayDate(selectedDate);
     dailyNote.value = recordIsHidden ? "" : record.note || "";
     dailyNote.hidden = recordIsHidden;
@@ -158,13 +159,9 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     dailyNote.disabled = cloudLocked;
     saveDailyNoteButton.disabled = cloudLocked;
     checkinButton.disabled = future || cloudLocked;
-    checkinButton.textContent = cloudLocked ? "登录后同步并打卡" : future ? "未来日期暂不能打卡" : record.checked ? "撤销打卡 ↺" : sameDay(selectedDate, getToday()) ? "今日打卡 ✓" : "为这天打卡 ✓";
-    dailyStatus.textContent = publicReadOnly
-      ? (recordIsHidden
-        ? "这一天的内容已隐藏。"
-        : record.note || record.checked
-        ? "这是公开只读记录：你可以浏览日期与内容，但无法修改。"
-        : "这一天没有公开记录；点击其他日期查看。")
+    checkinButton.textContent = privateGateMode ? "只读记录" : cloudLocked ? "登录后同步并打卡" : future ? "未来日期暂不能打卡" : record.checked ? "撤销打卡 ↺" : sameDay(selectedDate, getToday()) ? "今日打卡 ✓" : "为这天打卡 ✓";
+    dailyStatus.textContent = privateGateMode
+      ? "这是密码保护的只读记录；修改请前往管理后台。"
       : cloudLocked
       ? "登录后即可查看和编辑自己的云端学习记录。"
       : future
@@ -233,8 +230,21 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
 
   window.addEventListener("blizzard:cloud-access-change", renderCalendar);
 
+  window.addEventListener("blizzard:private-records-unlocked", (event) => {
+    checkins = Object.fromEntries((event.detail?.records || []).map((row) => [
+      row.checkin_date,
+      {
+        note: row.note || "",
+        checked: Boolean(row.checked),
+        isHidden: Boolean(row.is_hidden),
+        updatedAt: row.updated_at || ""
+      }
+    ]));
+    renderCalendar();
+  });
+
   saveDailyNoteButton?.addEventListener("click", () => {
-    if (publicReadOnly) return;
+    if (privateGateMode) return;
     const key = dateKey(selectedDate);
     const previous = checkins[key] || {};
     const note = dailyNote.value.trim();
@@ -250,7 +260,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
   });
 
   checkinButton?.addEventListener("click", () => {
-    if (publicReadOnly) return;
+    if (privateGateMode) return;
     if (isFuture(selectedDate)) return;
     const key = dateKey(selectedDate);
     const previous = checkins[key] || {};
@@ -266,55 +276,7 @@ if (calendarGrid && calendarMonth && selectedDateLabel && dailyNote && checkinBu
     }
   });
 
-  const loadPublicCheckins = async (attempt = 0) => {
-    const config = window.SUPABASE_CONFIG || {};
-    const isConfigured = window.supabase?.createClient
-      && typeof config.url === "string"
-      && config.url.startsWith("https://")
-      && typeof config.publishableKey === "string"
-      && config.publishableKey.length > 20;
-    if (!isConfigured) {
-      dailyStatus.textContent = "公开记录暂时无法加载。";
-      return;
-    }
-
-    dailyStatus.textContent = "正在加载公开打卡记录…";
-    const client = window.supabase.createClient(config.url, config.publishableKey);
-    const { data, error } = await client.rpc("get_public_checkins");
-    if (error) {
-      if (attempt === 0) {
-        dailyStatus.textContent = "网络较慢，正在重新加载公开记录…";
-        window.setTimeout(() => { void loadPublicCheckins(1); }, 1200);
-      } else {
-        dailyStatus.textContent = "公开记录暂时无法加载，请刷新页面后重试。";
-      }
-      return;
-    }
-
-    const rows = Array.isArray(data) ? data : [];
-    checkins = rows.reduce((result, row) => {
-      if (typeof row.checkin_date !== "string") return result;
-      result[row.checkin_date] = {
-        note: typeof row.note === "string" ? row.note : "",
-        checked: Boolean(row.checked),
-        isHidden: Boolean(row.is_hidden),
-        updatedAt: row.updated_at || ""
-      };
-      return result;
-    }, {});
-
-    if (rows[0]?.checkin_date) {
-      selectedDate = fromDateKey(rows[0].checkin_date);
-      visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-    }
-    renderCalendar();
-  };
-
   renderCalendar();
-  if (publicReadOnly) {
-    void loadPublicCheckins();
-    window.addEventListener("online", () => { void loadPublicCheckins(); });
-  }
 }
 
 const poemText = document.querySelector("[data-poem-text]");

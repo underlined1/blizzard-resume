@@ -12,9 +12,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=checkin-watermark-1" />
+    <link rel="stylesheet" href="styles.css?v=private-records-2" />
   </head>
-  <body class="site-page page-records" data-checkins-mode="public">
+  <body class="site-page page-records records-is-locked" data-records-access="private-gate">
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <div class="noise" aria-hidden="true"></div>
     <div class="page-shell">
@@ -26,6 +26,25 @@
       </header>
 
       <main id="main-content" class="page-main records-main">
+        <section class="records-lock" data-records-lock aria-labelledby="records-lock-title">
+          <div class="records-lock-card">
+            <div class="records-lock-mark" aria-hidden="true">✦</div>
+            <p class="section-kicker">PRIVATE ARCHIVE / 仅限本人</p>
+            <h1 id="records-lock-title">这部分记录，<br /><em>只留给自己。</em></h1>
+            <p class="records-lock-copy">输入独立的访问用户名和密码。验证通过前，记录内容不会从云端返回。</p>
+            <form class="records-lock-form" data-records-lock-form>
+              <label for="records-lock-username">访问用户名</label>
+              <input id="records-lock-username" data-records-lock-username type="text" autocomplete="username" value="admin" spellcheck="false" required />
+              <label for="records-lock-password">访问密码</label>
+              <input id="records-lock-password" data-records-lock-password type="password" autocomplete="current-password" placeholder="输入密码" required />
+              <button class="button button-primary" type="submit" data-records-lock-submit>解锁私密记录 <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="records-lock-status" data-records-lock-status aria-live="polite">请输入访问用户名和密码。</p>
+            <a class="records-lock-back" href="index.html">← 返回公开首页</a>
+          </div>
+        </section>
+
+        <div class="records-private-content" data-records-private-content inert aria-hidden="true">
         <section class="page-intro reveal" aria-labelledby="records-title"><p class="section-kicker">03 / STUDY &amp; WORK LOG</p><h1 id="records-title">把每一天，<br /><em>记成可回望的片段。</em></h1></section>
 
         <section class="poetry-banner reveal" aria-labelledby="poem-title">
@@ -36,41 +55,6 @@
 
         <section class="record-section calendar-records reveal delay-1" aria-labelledby="calendar-title">
           <div class="record-heading"><div><p class="section-kicker">DAILY CHECK-IN</p><h2 id="calendar-title">把努力，<br />落在每一天。</h2></div></div>
-
-          <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
-            <div class="cloud-sync-copy"><p class="section-kicker">PRIVATE CLOUD SYNC</p><h3 id="cloud-sync-title">你的记录，只属于你。</h3><p data-cloud-status>正在检查云端连接…</p></div>
-            <form class="cloud-login-form" data-cloud-login-form>
-              <label class="sr-only" for="cloud-login-email">登录邮箱</label>
-              <input id="cloud-login-email" data-cloud-login-email type="email" autocomplete="email" placeholder="输入你的邮箱" required />
-              <label class="sr-only" for="cloud-login-password">登录密码</label>
-              <input id="cloud-login-password" data-cloud-login-password type="password" autocomplete="current-password" placeholder="输入你的密码" minlength="8" required />
-              <button class="button button-primary" type="submit" data-cloud-login-button>账号密码登录</button>
-              <button class="utility-button" type="button" data-cloud-password-recovery>忘记密码</button>
-            </form>
-            <div class="cloud-account" data-cloud-account hidden>
-              <span data-cloud-user>已登录</span>
-              <div class="cloud-account-actions">
-                <a class="utility-button" href="admin.html">管理后台</a>
-                <button class="utility-button" type="button" data-cloud-set-password aria-expanded="false">设置密码</button>
-                <button class="utility-button" type="button" data-cloud-change-email aria-expanded="false">更换邮箱</button>
-                <button class="utility-button" type="button" data-cloud-sign-out>退出登录</button>
-              </div>
-            </div>
-            <form class="cloud-email-change-form" data-cloud-email-change-form hidden>
-              <label class="sr-only" for="cloud-new-email">新登录邮箱</label>
-              <input id="cloud-new-email" data-cloud-new-email type="email" autocomplete="email" placeholder="输入新的登录邮箱" required />
-              <button class="button button-primary" type="submit" data-cloud-change-email-submit>发送确认邮件</button>
-              <button class="utility-button" type="button" data-cloud-cancel-email-change>取消</button>
-            </form>
-            <form class="cloud-password-form" data-cloud-password-form hidden>
-              <label class="sr-only" for="cloud-new-password">新密码</label>
-              <input id="cloud-new-password" data-cloud-new-password type="password" autocomplete="new-password" minlength="8" placeholder="设置至少 8 位的新密码" required />
-              <label class="sr-only" for="cloud-confirm-password">确认新密码</label>
-              <input id="cloud-confirm-password" data-cloud-confirm-password type="password" autocomplete="new-password" minlength="8" placeholder="再次输入新密码" required />
-              <button class="button button-primary" type="submit" data-cloud-save-password>保存密码</button>
-              <button class="utility-button" type="button" data-cloud-cancel-password>取消</button>
-            </form>
-          </section>
 
           <div class="calendar-layout">
             <section class="calendar-panel" aria-label="学习打卡日历">
@@ -99,14 +83,16 @@
             </aside>
           </div>
         </section>
+        </div>
       </main>
       <footer class="site-footer"><span>© <span data-year></span> 暴风雪</span><span>WRITE IT DOWN.</span><a href="index.html">BACK HOME →</a></footer>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
     <script src="supabase-config.js"></script>
     <script src="security.js"></script>
-    <script src="global-music.js?v=route-mode-1"></script>
+    <script src="records-access.js?v=private-records-2"></script>
+    <script src="global-music.js?v=route-mode-2"></script>
     <script src="poem-library.js"></script>
-    <script src="script.js?v=public-records-5"></script>
+    <script src="script.js?v=private-records-2"></script>
   </body>
 </html>

@@ -273,8 +273,6 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 .daily-note-label { margin: 0 0 8px; font: 600 11px var(--mono); }.daily-log-panel textarea { width: 100%; resize: vertical; min-height: 142px; box-sizing: border-box; padding: 14px; border: 1px solid var(--ink); border-radius: 0; outline: 0; background: var(--paper); color: var(--ink); font: 14px/1.7 "Noto Sans SC", sans-serif; }.daily-log-panel textarea:focus { box-shadow: 4px 4px 0 var(--coral); }.daily-log-panel textarea::placeholder { color: #82919a; }
 .hidden-checkin-sticker { display: grid; min-height: 142px; place-items: center; overflow: hidden; box-sizing: border-box; border: 1px solid rgba(16, 38, 51, .24); background: rgba(255, 255, 255, .12); }.hidden-checkin-sticker span { display: inline-block; color: rgba(16, 38, 51, .38); font: 600 clamp(26px, 3vw, 35px)/1 var(--mono); letter-spacing: .46em; text-indent: .46em; transform: rotate(-12deg); user-select: none; }
 .daily-actions { display: flex; gap: 10px; margin-top: 13px; }.daily-actions .utility-button { flex: 1; background: #d8e5fa; color: var(--ink); border-color: var(--ink); }.daily-actions .utility-button:hover { background: var(--paper); }.daily-actions .button { flex: 1.25; display: inline-flex; justify-content: center; padding: 11px 8px; }.daily-actions .button:disabled { cursor: not-allowed; opacity: .48; }.daily-status { min-height: 34px; margin: 16px 0 0; color: #38536a; font: 10px/1.65 var(--mono); }
-[data-checkins-mode="public"] .cloud-sync-panel, [data-checkins-mode="public"] .daily-actions { display: none; }[data-checkins-mode="public"] .daily-log-panel textarea:disabled { opacity: 1; cursor: default; background: #f4f2eb; color: var(--ink); }[data-checkins-mode="public"] .daily-log-panel textarea:disabled::placeholder { color: #82919a; }
-
 @media (max-width: 840px) {
   .local-clock { margin-top: 2px; }.calendar-records { margin-top: 70px; }.calendar-layout { grid-template-columns: 1fr; gap: 28px; }.calendar-panel, .daily-log-panel { padding: 23px; box-shadow: 6px 6px 0 var(--ink); }.calendar-day, .calendar-empty { min-height: 62px; }.daily-log-panel h3 { min-height: 0; }
 }
@@ -450,3 +448,41 @@ dialog { border: 0; padding: 0; max-width: none; background: transparent; color:
 /* A small player follows every page. Mobile shows the controls directly. */
 .global-music-dock { position: fixed; right: 0; bottom: 28px; z-index: 30; width: 52px; height: 56px; }.global-music-dock[hidden] { display: none; }.global-music-peek { position: absolute; right: 0; bottom: 0; z-index: 1; display: grid; place-items: center; width: 52px; height: 56px; border: 1px solid var(--ink); border-right: 0; border-radius: 0; background: var(--coral); color: var(--paper); box-shadow: -4px 4px 0 var(--ink); cursor: pointer; font: 700 24px/1 var(--mono); transition: background .2s ease, transform .2s ease; }.global-music-panel { position: absolute; right: 0; bottom: 0; display: flex; align-items: center; gap: 10px; width: min(520px, calc(100vw - 24px)); min-height: 66px; box-sizing: border-box; padding: 10px; border: 1px solid var(--ink); background: var(--paper); box-shadow: 6px 6px 0 var(--ink); opacity: 0; pointer-events: none; transform: translateX(18px); transition: opacity .2s ease, transform .2s ease; }.global-music-dock:hover .global-music-panel, .global-music-dock:focus-within .global-music-panel, .global-music-dock.is-open .global-music-panel { opacity: 1; pointer-events: auto; transform: translateX(0); }.global-music-dock:hover .global-music-peek, .global-music-dock:focus-within .global-music-peek, .global-music-dock.is-open .global-music-peek { background: var(--lime); color: var(--ink); }.global-music-toggle { flex: 0 0 auto; min-height: 38px; padding: 9px 12px; border: 1px solid var(--ink); border-radius: 0; background: var(--coral); color: var(--paper); cursor: pointer; font: 700 10px var(--mono); }.global-music-copy { display: grid; min-width: 0; flex: 1; gap: 3px; }.global-music-copy strong { overflow: hidden; color: var(--ink); font: 700 11px var(--mono); text-overflow: ellipsis; white-space: nowrap; }.global-music-copy span { overflow: hidden; color: #52636e; font: 10px var(--mono); text-overflow: ellipsis; white-space: nowrap; }.global-music-action { flex: 0 0 auto; min-height: 38px; padding: 8px 10px; border: 1px solid var(--ink); border-radius: 0; background: var(--paper); color: var(--ink); cursor: pointer; font: 700 10px var(--mono); }.global-music-peek:hover, .global-music-peek:focus-visible, .global-music-toggle:hover, .global-music-toggle:focus-visible, .global-music-action:hover, .global-music-action:focus-visible { outline: 0; box-shadow: 3px 3px 0 var(--violet); transform: translate(-1px, -1px); }
 @media (max-width: 580px) { body { padding-bottom: 88px; }.global-music-dock { right: 12px; bottom: 12px; width: calc(100vw - 24px); height: 64px; }.global-music-peek { display: none; }.global-music-panel { right: 0; width: 100%; min-height: 64px; padding: 8px; gap: 7px; opacity: 1; pointer-events: auto; transform: none; }.global-music-copy { min-width: 54px; }.global-music-copy span { display: none; }.global-music-action, .global-music-toggle { min-height: 44px; padding: 8px 9px; font-size: 10px; }.global-music-action:last-child { display: none; } }
+
+/* Password gate for the private study archive. The database RLS remains the
+   actual security boundary; this layer prevents accidental on-screen access. */
+.records-is-locked { overflow: hidden; }
+.page-records main { animation: none; transform: none; }
+.records-private-content { transition: filter .35s ease, opacity .35s ease, transform .35s ease; }
+.records-is-locked .records-private-content { filter: blur(18px) saturate(.45); opacity: .42; pointer-events: none; transform: scale(1.012); user-select: none; }
+.records-lock { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 28px; overflow: auto; background: rgba(229, 235, 238, .74); -webkit-backdrop-filter: blur(22px) saturate(.72); backdrop-filter: blur(22px) saturate(.72); }
+.records-lock[hidden] { display: none; }
+.records-lock::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .32; background-image: linear-gradient(rgba(16, 38, 51, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 38, 51, .08) 1px, transparent 1px); background-size: 34px 34px; mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent); }
+.records-lock-card { position: relative; width: min(100%, 560px); padding: clamp(28px, 5vw, 52px); border: 1px solid var(--ink); background: rgba(247, 244, 236, .92); box-shadow: 12px 12px 0 var(--ink); }
+.records-lock-mark { position: absolute; top: -22px; right: 27px; display: grid; place-items: center; width: 50px; height: 50px; border: 1px solid var(--ink); background: var(--violet); color: var(--paper); font-size: 22px; box-shadow: 5px 5px 0 var(--ink); }
+.records-lock-card .section-kicker { color: #52636e; }
+.records-lock-card h1 { margin: 15px 0 18px; font-size: clamp(38px, 7vw, 64px); line-height: .95; letter-spacing: -.075em; }
+.records-lock-card h1 em { color: var(--coral); font-family: Georgia, "Noto Serif SC", serif; font-weight: 400; }
+.records-lock-copy { max-width: 460px; margin: 0 0 26px; color: #405460; font-size: 14px; line-height: 1.75; }
+.records-lock-form { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.records-lock-form label { color: #52636e; font: 600 10px var(--mono); letter-spacing: .08em; }
+.records-lock-form input { width: 100%; min-width: 0; padding: 14px; border: 1px solid var(--ink); border-radius: 0; outline: 0; background: var(--paper); color: var(--ink); font: 13px var(--mono); }
+.records-lock-form input:focus { box-shadow: 4px 4px 0 var(--violet); }
+.records-lock-form .button { grid-column: 1 / -1; width: 100%; min-height: 51px; margin-top: 7px; }
+.records-lock-recovery { justify-self: start; padding: 5px 0; border: 0; border-bottom: 1px solid currentColor; background: transparent; color: #405460; cursor: pointer; font: 11px var(--mono); }
+.records-lock-recovery:hover, .records-lock-recovery:focus-visible { color: var(--coral); }
+.records-lock-status { min-height: 20px; margin: 17px 0 0; color: #52636e; font: 11px/1.6 var(--mono); }
+.records-lock-status[data-state="error"] { color: #a7362a; }
+.records-lock-status[data-state="success"] { color: #2e6a4c; }
+.records-lock-back { display: inline-block; margin-top: 17px; color: var(--ink); font: 700 11px var(--mono); text-decoration: none; }
+.records-lock-back:hover { color: var(--coral); }
+.page-records[data-records-access="private-gate"] .daily-actions { display: none; }
+
+@media (max-width: 580px) {
+  .records-lock { align-items: start; padding: 52px 16px 110px; }
+  .records-lock-card { padding: 31px 22px 26px; box-shadow: 7px 7px 0 var(--ink); }
+  .records-lock-mark { right: 20px; width: 44px; height: 44px; }
+  .records-lock-card h1 { font-size: 42px; }
+  .records-lock-form { grid-template-columns: 1fr; }
+  .records-lock-form .button { grid-column: 1; }
+}

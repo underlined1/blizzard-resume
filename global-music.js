@@ -12,7 +12,8 @@
 
   if (!canUseCloud) return;
 
-  const client = window.supabase.createClient(config.url, config.publishableKey);
+  const client = window.BLIZZARD_SUPABASE_CLIENT
+    || (window.BLIZZARD_SUPABASE_CLIENT = window.supabase.createClient(config.url, config.publishableKey));
   const initialPlayer = document.querySelector("[data-public-music-player]");
   const player = initialPlayer || new Audio();
   const state = readState();

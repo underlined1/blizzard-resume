@@ -67,11 +67,18 @@
     return;
   }
 
-  const client = window.supabase.createClient(config.url, config.publishableKey);
+  const client = window.BLIZZARD_SUPABASE_CLIENT
+    || (window.BLIZZARD_SUPABASE_CLIENT = window.supabase.createClient(config.url, config.publishableKey));
   let activeUser = null;
   let syncing = false;
   let syncQueue = Promise.resolve();
   let passwordRecoveryActive = false;
+  let sessionCheckVersion = 0;
+
+  const hasAdminAccess = async () => {
+    const { data, error } = await client.rpc("is_site_admin");
+    return { allowed: data === true && !error, error };
+  };
 
   const readLocalRecords = () => {
     try {
@@ -190,14 +197,31 @@
   };
 
   const handleSession = async (session) => {
-    activeUser = session?.user || null;
-    showAccount(activeUser);
-    if (!activeUser) {
+    const checkVersion = ++sessionCheckVersion;
+    const sessionUser = session?.user || null;
+    if (!sessionUser) {
+      activeUser = null;
+      showAccount(null);
       passwordRecoveryActive = false;
       setEditingAccess(false);
       status.textContent = "请用自己的邮箱和密码登录后，再查看和编辑云端学习记录。";
       return;
     }
+
+    setEditingAccess(false);
+    status.textContent = "正在验证站长权限…";
+    const { allowed } = await hasAdminAccess();
+    if (checkVersion !== sessionCheckVersion) return;
+    if (!allowed) {
+      activeUser = null;
+      showAccount(null);
+      status.textContent = "这个账号没有管理私密记录的权限。";
+      await client.auth.signOut();
+      return;
+    }
+
+    activeUser = sessionUser;
+    showAccount(activeUser);
     await syncInitialRecords();
     if (passwordRecoveryActive) {
       passwordForm.hidden = false;
